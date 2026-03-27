@@ -30,18 +30,37 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-你是阅卷助手。请根据题目、参考答案和学生答案进行评分。
-题型：${questionType || 'short_answer'}
-满分：${maxScore}
-题目：${question}
-参考答案：${referenceAnswer || '无'}
-学生答案：${userAnswer}
-附加要求：${additionalPrompt || '无'}
+You are a strict grading assistant.
+Task: Grade the student's answer against the question and reference answer.
 
-请严格输出 JSON：
-1. score：0-${maxScore} 的数字分数
-2. feedback：简短评价（指出关键得失）
-3. advice：改进建议（可执行）
+Return JSON only. No markdown, no explanations.
+Required schema:
+{
+  "score": 0,
+  "feedback": "...",
+  "advice": "..."
+}
+
+Rules:
+1. score must be a number in [0, ${maxScore}].
+2. feedback should state strengths and mistakes briefly.
+3. advice should provide actionable next steps.
+4. Keep output concise and objective.
+
+Example output:
+{
+  "score": 7,
+  "feedback": "Core idea is correct, but key detail about time complexity is missing.",
+  "advice": "Review the proof for why binary search halves the search space each step."
+}
+
+Input:
+- questionType: ${questionType || 'short_answer'}
+- maxScore: ${maxScore}
+- question: ${question}
+- referenceAnswer: ${referenceAnswer || 'None'}
+- userAnswer: ${userAnswer}
+- additionalInstruction: ${additionalPrompt || 'None'}
 `;
 
     const result = await generateJsonWithSchema({

@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
@@ -64,16 +65,48 @@ export async function POST(req: Request) {
     const reconstructedText = material.chapters
       .map(
         (chapter) =>
-          `銆?{chapter.name}銆慭n${chapter.knowledgePoints
+          `# ${chapter.name}\n${chapter.knowledgePoints
             .map((kp) => `${kp.name}\n${kp.originalText}`.trim())
             .join('\n\n')}`.trim()
       )
       .join('\n\n');
 
-    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}浣犳槸涓ヨ皑鐨勫嚭棰樺姪鎵嬨€?浠诲姟锛氫负涓嬫柟姣忎釜鐭ヨ瘑鐐圭敓鎴?1 閬撳～绌洪锛屽繀椤昏鐩栧叏閮ㄧ煡璇嗙偣锛屼笉鑳介仐婕忋€?瑙勫垯锛?1. 鍙緭鍑洪鐩暟鎹紝涓嶈瑙ｉ噴銆?2. 姣忛淇濈暀 knowledgePointId銆?3. sentence 浣跨敤 {{blank_0}} 鏍峰紡鍗犱綅绗︺€?4. answers 涓庡崰浣嶇椤哄簭涓€鑷淬€?5. 棰樺共蹇呴』鍩轰簬鍘熸枃锛屼笉鑳界紪閫犮€?
-璧勬枡鍏ㄦ枃锛?${reconstructedText}
+    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
+You are a strict question generator.
+Task: Generate one cloze question for EACH target knowledge point.
 
-鐩爣鐭ヨ瘑鐐瑰垪琛細
+Output rules:
+1. Return JSON only, no markdown and no explanation.
+2. Use this schema exactly:
+{
+  "questions": [
+    {
+      "knowledgePointId": "...",
+      "sentence": "... {{blank_0}} ...",
+      "answers": ["..."]
+    }
+  ]
+}
+3. Each target knowledgePointId must appear exactly once.
+4. sentence must include at least one placeholder.
+5. answers order must match placeholders.
+6. Keep content faithful to source text.
+
+Example output:
+{
+  "questions": [
+    {
+      "knowledgePointId": "kp_100",
+      "sentence": "HTTP status {{blank_0}} means not found.",
+      "answers": ["404"]
+    }
+  ]
+}
+
+Material source text:
+${reconstructedText}
+
+Target knowledge points:
 ${JSON.stringify(
   targetKnowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,

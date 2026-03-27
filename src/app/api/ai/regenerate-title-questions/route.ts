@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
@@ -43,9 +44,31 @@ const normalizeBatchQuestions = (
 
 async function generateSingleQuestion(model: LanguageModel, promptTemplate: string, kp: KnowledgePointLite) {
   const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-浣犳槸楂樿川閲忓～绌洪鍔╂墜锛岃鍙负杩欎釜鐭ヨ瘑鐐圭敓鎴?1 閬撳～绌洪銆?瑕佹眰锛?1. sentence 浣跨敤 {{blank_0}} 鍗犱綅绗︽牸寮忋€?2. answers 鎸夊崰浣嶇椤哄簭杩斿洖銆?3. 棰樼洰蹇呴』蹇犱簬鍘熸枃锛屼笉鑳界紪閫犮€?
-鐭ヨ瘑鐐癸細${kp.name}
-鍘熸枃锛?{kp.originalText}
+You are a strict question generator.
+Task: Generate exactly one cloze question from the input knowledge point.
+
+Return JSON only with this schema:
+{
+  "sentence": "... {{blank_0}} ...",
+  "answers": ["..."]
+}
+
+Rules:
+1. Do not output markdown or explanations.
+2. sentence must include at least one placeholder.
+3. answers must match placeholder order.
+4. Question must rely on source text.
+
+Example:
+{
+  "sentence": "A process switch saves {{blank_0}}.",
+  "answers": ["CPU context"]
+}
+
+Knowledge point name:
+${kp.name}
+Source text:
+${kp.originalText}
 `;
 
   return generateJsonWithSchema({
@@ -94,7 +117,7 @@ export async function POST(req: Request) {
 
     const reconstructedText = material.chapters
       .map((ch) =>
-        `銆?{ch.name}銆慭n${ch.knowledgePoints
+        `# ${ch.name}\n${ch.knowledgePoints
           .map((kp) => `${kp.name}\n${kp.originalText}`.trim())
           .join('\n\n')}`.trim()
       )
@@ -102,10 +125,23 @@ export async function POST(req: Request) {
 
     const storedSource = await getMaterialSource(materialId).catch(() => null);
     const sourceText = storedSource?.trim() || reconstructedText;
-    const sourceContext = `璧勬枡鍏ㄦ枃锛歕n${sourceText}`;
+    const sourceContext = `Material source:\n${sourceText}`;
 
     const titlePrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-浣犳槸瀛︿範璧勬枡鍛藉悕鍔╂墜銆傝鏍规嵁璧勬枡鍏ㄦ枃涓庣珷鑺傜粨鏋勭敓鎴愪竴涓畝娲併€佷笓涓氱殑涓枃鏍囬銆?褰撳墠鏍囬锛?{material.title}
+You are a title optimizer.
+Task: Generate one concise and specific title for this learning material.
+
+Rules:
+1. Return JSON only.
+2. Use schema: { "title": "..." }
+3. Length 6-40 characters preferred.
+4. Keep meaning aligned with source content.
+
+Example:
+{ "title": "Computer Networks Final Review" }
+
+Current title:
+${material.title}
 ${sourceContext}
 `;
 
@@ -163,8 +199,32 @@ ${sourceContext}
     }
 
     const batchPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-浣犳槸楂樿川閲忓～绌洪鍔╂墜銆傝涓烘瘡涓煡璇嗙偣鍚勭敓鎴?1 閬撳～绌洪锛屽繀椤昏鐩栧叏閮ㄧ煡璇嗙偣锛屼笉鑳介仐婕忋€?瑕佹眰锛?1. 蹇呴』淇濈暀 knowledgePointId銆?2. sentence 浣跨敤 {{blank_0}} 鍗犱綅绗︽牸寮忋€?3. answers 鎸夊崰浣嶇椤哄簭杩斿洖銆?4. 涓嶈兘鏂板涓嶅湪鍒楄〃涓殑 knowledgePointId銆?
-鐭ヨ瘑鐐瑰垪琛細
+You are a strict question generator.
+Task: Generate one cloze question for EACH knowledge point in this chapter.
+
+Return JSON only.
+Accepted output shapes:
+A) { "questions": [ { "knowledgePointId": "...", "sentence": "... {{blank_0}} ...", "answers": ["..."] } ] }
+B) [ { "knowledgePointId": "...", "sentence": "... {{blank_0}} ...", "answers": ["..."] } ]
+
+Rules:
+1. Every input knowledgePointId should appear exactly once.
+2. sentence must include at least one placeholder.
+3. answers must match placeholder order.
+4. No explanations, no markdown.
+
+Example:
+{
+  "questions": [
+    {
+      "knowledgePointId": "kp_01",
+      "sentence": "The scheduler chooses {{blank_0}} first.",
+      "answers": ["the next runnable process"]
+    }
+  ]
+}
+
+Knowledge points input:
 ${JSON.stringify(
   chapterAfterClear.knowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,

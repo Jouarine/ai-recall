@@ -23,19 +23,36 @@ export async function POST(req: Request) {
 
     const historyPrompt =
       Array.isArray(usedBlanksHistory) && usedBlanksHistory.length > 0
-        ? `以下答案已用过，请避免重复：${usedBlanksHistory.join('、')}`
-        : '请生成 1-3 个高价值空，覆盖关键概念。';
+        ? `Avoid using these previous answers: ${usedBlanksHistory.join(', ')}`
+        : 'Generate 1-3 high-value blanks that test core concepts.';
 
     const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-你是出题助手。请根据给定原文生成一道填空题，并严格输出 JSON。
-要求：
-1. sentence 中用 {{blank_0}}、{{blank_1}} 这类占位符表示空。
-2. answers 按占位符顺序给出标准答案。
-3. 不要输出解释文本。
-${historyPrompt}
-附加要求：${additionalPrompt || '无'}
+You are a strict cloze-question generator.
+Task: Create one cloze question from source text.
 
-原文：
+Return JSON only. No markdown, no explanation.
+Required schema:
+{
+  "sentence": "... {{blank_0}} ...",
+  "answers": ["..."]
+}
+
+Rules:
+1. sentence must contain at least one placeholder {{blank_n}}.
+2. answers must align with placeholder order.
+3. Keep wording faithful to source text.
+4. Keep question concise and test-worthy.
+
+Example output:
+{
+  "sentence": "A binary search has time complexity {{blank_0}}.",
+  "answers": ["O(log n)"]
+}
+
+${historyPrompt}
+Additional instruction:
+${additionalPrompt || 'None'}
+Source text:
 ${originalText}
 `;
 

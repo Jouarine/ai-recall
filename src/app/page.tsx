@@ -143,8 +143,23 @@ const getChapterItems = (
 
 export default function HomePage() {
   const [pendingQuestionId, setPendingQuestionId] = useState<string | null>(null);
-  const { data: materials, isLoading, mutate } = useSWR<ApiMaterial[]>('/api/materials', fetchMaterials);
-  const { data: errors = [], mutate: mutateErrors } = useSWR<ErrorRecord[]>('/api/errors', fetchErrors);
+  const {
+    data: materials,
+    isLoading: materialsLoading,
+    mutate,
+  } = useSWR<ApiMaterial[]>('/api/materials', fetchMaterials, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
+    keepPreviousData: true,
+  });
+  const { data: errors = [], mutate: mutateErrors } = useSWR<ErrorRecord[]>('/api/errors', fetchErrors, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
+    keepPreviousData: true,
+  });
+  const isInitialLoading = materialsLoading && !materials;
 
   const [selectedKnowledgePointId, setSelectedKnowledgePointId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -622,7 +637,7 @@ export default function HomePage() {
             </div>
           )}
 
-          {isLoading ? (
+          {isInitialLoading ? (
             <div className="flex items-center justify-center flex-1 h-full w-full">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>

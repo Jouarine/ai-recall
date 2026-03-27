@@ -106,14 +106,14 @@ export async function generateJsonWithSchema<T>({
       const retryHint =
         attempt === 0
           ? ''
-          : `\n\n上一次输出无法被解析为合法 JSON。请本次务必：\n- 闭合所有引号、括号、数组\n- 不输出任何解释文本\n- 仅输出一份完整 JSON。`;
+          : `\n\n上一次输出无法被解析为合法 JSON。请本次务必：\n- 闭合所有引号、括号、数组\n- 不输出任何解释文本\n- 仅输出一份完整 JSON\n- 自然语言字段统一使用简体中文。`;
 
       const response = await generateText({
         model,
         temperature,
         maxOutputTokens: safeMaxOutputTokens,
         timeout: timeoutMs,
-        prompt: `${prompt}${retryHint}\n\nPlease output strict JSON only. Do not output explanations, comments, or Markdown code fences.`,
+        prompt: `${prompt}${retryHint}\n\n请仅输出严格 JSON，不要输出解释、注释或 Markdown 代码块。自然语言字段统一使用简体中文（ID、键名、固定枚举值除外）。`,
       });
 
       const raw = extractJsonBlock(response.text);

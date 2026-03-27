@@ -41,11 +41,11 @@ const pickString = (obj: Record<string, unknown>, keys: string[]): string | null
 
 const normalizeType = (rawType: string, allowedTypes: string[]): string => {
   const t = rawType.toLowerCase().trim();
-  if (['choice', 'multiple_choice', '选择题'].includes(t)) return allowedTypes.includes('choice') ? 'choice' : allowedTypes[0];
-  if (['cloze', 'fill', 'fill_blank', '填空题'].includes(t)) return allowedTypes.includes('cloze') ? 'cloze' : allowedTypes[0];
-  if (['short_answer', 'qa', '简答题'].includes(t)) return allowedTypes.includes('short_answer') ? 'short_answer' : allowedTypes[0];
-  if (['thinking', '思考题'].includes(t)) return allowedTypes.includes('thinking') ? 'thinking' : allowedTypes[0];
-  if (['application', '应用题', 'case'].includes(t)) return allowedTypes.includes('application') ? 'application' : allowedTypes[0];
+  if (['choice', 'multiple_choice', 'mcq', 'xuan ze ti', '选择题'].includes(t)) return allowedTypes.includes('choice') ? 'choice' : allowedTypes[0];
+  if (['cloze', 'fill', 'fill_blank', 'tian kong ti', '填空题'].includes(t)) return allowedTypes.includes('cloze') ? 'cloze' : allowedTypes[0];
+  if (['short_answer', 'qa', 'jian da ti', '简答题'].includes(t)) return allowedTypes.includes('short_answer') ? 'short_answer' : allowedTypes[0];
+  if (['thinking', 'si kao ti', '思考题'].includes(t)) return allowedTypes.includes('thinking') ? 'thinking' : allowedTypes[0];
+  if (['application', 'case', 'ying yong ti', '应用题'].includes(t)) return allowedTypes.includes('application') ? 'application' : allowedTypes[0];
   return allowedTypes[0] || 'cloze';
 };
 
@@ -148,10 +148,7 @@ export async function POST(req: Request) {
     const model = getAiAdapter(req);
     const promptTemplate = getPromptTemplate(req);
 
-    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-你是教材结构化与出题助手。请把学习资料拆分为章节和知识点，并为每个知识点生成一道题。
-允许题型：${safeTypes.join('、')}
-必须输出 JSON，字段固定为：
+    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}你是教材结构化与出题助手。请将以下资料转为 JSON，严格使用字段，每一条都必须有：
 - chapters[].name
 - chapters[].knowledgePoints[].name
 - chapters[].knowledgePoints[].originalText
@@ -162,18 +159,43 @@ export async function POST(req: Request) {
 - chapters[].knowledgePoints[].question.options
 - chapters[].knowledgePoints[].question.referenceAnswer
 
-规则：
-1. cloze 使用 sentence + answers。
-2. choice 使用 stem + options + referenceAnswer。
-3. short_answer / thinking / application 使用 stem + referenceAnswer。
-4. 仅输出 JSON，不要解释。
-5. 尽量覆盖全部章节，不要只生成前几章。
+题型范围：${safeTypes.join('、')}
+要求：
+1. 所有自然语言内容必须使用简体中文。
+2. cloze 使用 sentence+answers，且 sentence 必须使用 {{blank_0}}, {{blank_1}}... 占位符。
+3. 禁止使用（）/____/[空] 作为填空标记。
+4. choice 提供 stem+options+referenceAnswer。
+5. short_answer/thinking/application 提供 stem+referenceAnswer。
+6. 仅输出 JSON，不要解释，不要 Markdown 代码块。
+7. 覆盖全部章节和知识点，不要只生成前几章。
 
-附加要求：${additionalPrompt || '无'}
+示例（必须严格仿照字段结构）：
+{
+  "chapters": [
+    {
+      "name": "第一章 计算机网络基础",
+      "knowledgePoints": [
+        {
+          "name": "OSI 七层模型",
+          "originalText": "OSI 模型将网络通信划分为七层。",
+          "question": {
+            "type": "cloze",
+            "stem": "",
+            "sentence": "OSI 模型共有 {{blank_0}} 层。",
+            "answers": ["七"],
+            "options": [],
+            "referenceAnswer": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+
+附加提示词：${additionalPrompt || '无'}
 资料标题：${title || '未命名资料'}
 资料正文：
-${text}
-`;
+${text}`;
 
     const looseResult = await generateJsonWithSchema({
       model,

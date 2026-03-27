@@ -58,7 +58,7 @@ const QUESTION_TYPE_OPTIONS = [
 ] as const;
 
 const buildExternalPrompt = (title: string, text: string, questionTypes: string[], extraPrompt: string): string => {
-  return `你是教材结构化与出题助手。请将以下资料转为 JSON，严格使用字段：
+  return `你是教材结构化与出题助手。请将以下资料转为 JSON，严格使用字段，每一条都必须有：
 - chapters[].name
 - chapters[].knowledgePoints[].name
 - chapters[].knowledgePoints[].originalText
@@ -70,10 +70,38 @@ const buildExternalPrompt = (title: string, text: string, questionTypes: string[
 - chapters[].knowledgePoints[].question.referenceAnswer
 题型范围：${questionTypes.join('、')}
 要求：
+0. 所有自然语言内容使用“简体中文”。
 1. cloze 使用 sentence+answers。
 2. choice 提供 stem+options+referenceAnswer。
 3. short_answer/thinking/application 提供 stem+referenceAnswer。
-4. 仅输出 JSON，不要解释。
+4. cloze 的 sentence 必须使用占位符 {{blank_0}}, {{blank_1}}...；禁止使用（）/____/[空] 这类格式。
+5. answers 必须与占位符顺序一一对应。
+6. 仅输出 JSON，不要解释，不要 Markdown 代码块。
+7. 若无法确定内容，也要保留字段，使用空字符串或空数组，不可缺字段。
+
+示例（必须严格仿照字段结构）：
+{
+  "chapters": [
+    {
+      "name": "第一章 计算机网络基础",
+      "knowledgePoints": [
+        {
+          "name": "OSI 七层模型",
+          "originalText": "OSI 模型将网络通信划分为七层。",
+          "question": {
+            "type": "cloze",
+            "stem": "",
+            "sentence": "OSI 模型共有 {{blank_0}} 层。",
+            "answers": ["七"],
+            "options": [],
+            "referenceAnswer": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+
 附加提示词：${extraPrompt || '无'}
 
 资料标题：${title}
@@ -167,7 +195,7 @@ export function MaterialUploadDialog({ onCreatedMaterial }: MaterialUploadDialog
     const prompt = buildExternalPrompt(title.trim(), text.trim(), questionTypes, extraPrompt.trim());
     const copied = await copyText(prompt);
     if (copied) {
-      alert('已复制提示词，可以粘贴到外部 AI。');
+      alert('已复制提示词。请确保外部 AI 严格使用 {{blank_0}} 占位符，否则导入后无法正确解析。');
       return;
     }
     alert('当前环境不支持自动复制，请长按手动复制。');

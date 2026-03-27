@@ -1,5 +1,6 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
@@ -33,9 +34,30 @@ async function generateSingleQuestion(
   knowledgePoint: KnowledgePointLite
 ) {
   const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-娴ｇ姵妲告妯垮窛闁插繐锝炵粚娲暯閸斺晜澧滈敍宀冾嚞閸欘亙璐熸潻娆庨嚋閻儴鐦戦悙鍦晸閹?1 闁挸锝炵粚娲暯閵?鐟曚焦鐪伴敍?1. sentence 娴ｈ法鏁?{{blank_0}} 閸楃姳缍呯粭锔界壐瀵繈鈧?2. answers 閹稿宕版担宥囶儊妞ゅ搫绨潻鏂挎礀閵?3. 妫版娲拌箛鍛淬€忚箛鐘辩艾閸樼喐鏋冮敍灞肩瑝閼崇晫绱柅鐘偓?
-閻儴鐦戦悙鐧哥窗${knowledgePoint.name}
-閸樼喐鏋冮敍?{knowledgePoint.originalText}
+You are a strict question generator.
+Task: Generate exactly one cloze question from the input knowledge point.
+
+Output rules:
+1. Return JSON only, no markdown, no explanation.
+2. Use this schema exactly:
+{
+  "sentence": "... {{blank_0}} ...",
+  "answers": ["..."]
+}
+3. sentence must include at least one placeholder like {{blank_0}}.
+4. answers must match placeholder order.
+5. Keep wording grounded in source text.
+
+Example output:
+{
+  "sentence": "TCP uses {{blank_0}} to ensure reliable delivery.",
+  "answers": ["sequence numbers"]
+}
+
+Knowledge point name:
+${knowledgePoint.name}
+Source text:
+${knowledgePoint.originalText}
 `;
 
   return generateJsonWithSchema({
@@ -80,8 +102,39 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const batchPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-娴ｇ姵妲告妯垮窛闁插繐锝炵粚娲暯閸斺晜澧滈妴鍌濐嚞娑撶儤鐦℃稉顏嗙叀鐠囧棛鍋ｉ崥鍕晸閹?1 闁挸锝炵粚娲暯閿涘苯绻€妞ゆ槒顩惄鏍у弿闁劎鐓＄拠鍡欏仯閿涘奔绗夐懗浠嬩粣濠曞繈鈧?鐟曚焦鐪伴敍?1. 韫囧懘銆忔穱婵堟殌 knowledgePointId閵?2. sentence 娴ｈ法鏁?{{blank_0}} 閸楃姳缍呯粭锔界壐瀵繈鈧?3. answers 閹稿宕版担宥囶儊妞ゅ搫绨潻鏂挎礀閵?4. 娑撳秷鍏橀弬鏉款杻娑撳秴婀崚妤勩€冩稉顓犳畱 knowledgePointId閵?
-閻儴鐦戦悙鐟板灙鐞涱煉绱?${JSON.stringify(
+You are a strict question generator.
+Task: Generate one cloze question for EACH knowledge point below.
+
+Output rules:
+1. Return JSON only, no markdown, no explanation.
+2. Use this schema exactly:
+{
+  "questions": [
+    {
+      "knowledgePointId": "...",
+      "sentence": "... {{blank_0}} ...",
+      "answers": ["..."]
+    }
+  ]
+}
+3. Every knowledgePointId in input must appear exactly once in output.
+4. sentence must include placeholder(s) {{blank_n}}.
+5. answers order must match placeholders.
+6. Do not fabricate facts not present in source text.
+
+Example output:
+{
+  "questions": [
+    {
+      "knowledgePointId": "kp_1",
+      "sentence": "DNS usually uses port {{blank_0}}.",
+      "answers": ["53"]
+    }
+  ]
+}
+
+Knowledge points input:
+${JSON.stringify(
   pendingKnowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,
     name: kp.name,

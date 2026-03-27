@@ -25,19 +25,47 @@ export async function POST(req: Request) {
 
     const typeInstruction =
       normalizedType === 'choice'
-        ? '生成 1 道四选一选择题，必须包含 options(4项) 和 referenceAnswer。'
+        ? 'Generate exactly one multiple-choice question with exactly 4 options and one clear referenceAnswer.'
         : normalizedType === 'thinking'
-          ? '生成 1 道思考题，强调分析与推理，并给出简明参考答案。'
+          ? 'Generate exactly one thinking question that requires reasoning, with a concise referenceAnswer.'
           : normalizedType === 'application'
-            ? '生成 1 道应用题，强调情境应用，并给出参考答案。'
-            : '生成 1 道简答题，并给出参考答案。';
+            ? 'Generate exactly one application question with a practical scenario, with a concise referenceAnswer.'
+            : 'Generate exactly one short-answer question with a concise referenceAnswer.';
 
     const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-你是出题助手。请基于原文生成题目，并严格输出 JSON。
+You are a strict question generator.
 ${typeInstruction}
-附加要求：${additionalPrompt || '无'}
 
-原文：
+Return JSON only. No markdown, no explanations.
+Required schema:
+{
+  "question": "...",
+  "referenceAnswer": "...",
+  "options": ["...", "...", "...", "..."]
+}
+
+Rules:
+1. For choice type, options must be present with exactly 4 entries.
+2. For non-choice types, options should be omitted.
+3. Keep wording specific and answerable from source text.
+4. Keep referenceAnswer short and precise.
+
+Example (choice):
+{
+  "question": "Which layer handles routing in the OSI model?",
+  "referenceAnswer": "Network layer",
+  "options": ["Physical layer", "Data link layer", "Network layer", "Transport layer"]
+}
+
+Example (short_answer):
+{
+  "question": "What is the purpose of a mutex?",
+  "referenceAnswer": "To ensure mutual exclusion for shared resources"
+}
+
+Additional instruction:
+${additionalPrompt || 'None'}
+Source text:
 ${originalText}
 `;
 
