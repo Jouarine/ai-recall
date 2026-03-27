@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String?
+  email     String?   @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  materials Material[]
+  errorLogs ErrorLog[]
+}
+
+model Material {
+  id         String    @id @default(cuid())
+  title      String
+  progress   Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapters Chapter[]
+}
+
+model Chapter {
+  id         String   @id @default(cuid())
+  name       String
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   Chapter?  @relation("ChapterToChapter", fields: [parentId], references: [id], onDelete: SetNull)
+  children Chapter[] @relation("ChapterToChapter")
+
+  knowledgePoints KnowledgePoint[]
+}
+
+model KnowledgePoint {
+  id           String   @id @default(cuid())
+  name         String
+  originalText String
+  orderIndex   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  chapterId String
+  chapter   Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  questions Question[]
+}
+
+model Question {
+  id                String   @id @default(cuid())
+  type              String
+  blanksData        String?
+  usedBlanksHistory String?
+  displayText       String?
+  qaQuestion        String?
+  qaReferenceAnswer String?
+  isStarred         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  knowledgePointId String
+  knowledgePoint   KnowledgePoint @relation(fields: [knowledgePointId], references: [id], onDelete: Cascade)
+  errorLogs        ErrorLog[]
+}
+
+model ErrorLog {
+  id              String   @id @default(cuid())
+  userWrongAnswer String?
+  errorCount      Int      @default(1)
+  isResolved      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, userId])
+}
