@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { Navbar } from '@/components/navbar';
 import { Sidebar } from '@/components/sidebar/sidebar';
@@ -143,7 +142,7 @@ const getChapterItems = (
 };
 
 export default function HomePage() {
-  const searchParams = useSearchParams();
+  const [pendingQuestionId, setPendingQuestionId] = useState<string | null>(null);
   const { data: materials, isLoading, mutate } = useSWR<ApiMaterial[]>('/api/materials', fetchMaterials);
   const { data: errors = [], mutate: mutateErrors } = useSWR<ErrorRecord[]>('/api/errors', fetchErrors);
 
@@ -208,7 +207,16 @@ export default function HomePage() {
   }, [currentMaterial, selectedKnowledgePointId]);
 
   useEffect(() => {
-    const questionId = searchParams.get('questionId');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const questionId = params.get('questionId');
+    if (questionId) {
+      setPendingQuestionId(questionId);
+    }
+  }, []);
+
+  useEffect(() => {
+    const questionId = pendingQuestionId;
     if (!questionId || appliedQuestionId === questionId) return;
     if (!currentMaterial?.chapters?.length) return;
 
@@ -225,7 +233,7 @@ export default function HomePage() {
         return;
       }
     }
-  }, [searchParams, currentMaterial, appliedQuestionId]);
+  }, [pendingQuestionId, currentMaterial, appliedQuestionId]);
 
   useEffect(() => {
     setCurrentQuestionIndex(0);
