@@ -1,4 +1,5 @@
-ï»¿import { z } from 'zod';
+export const runtime = 'nodejs';
+import { z } from 'zod';
 import { NextResponse } from 'next/server';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
 import { generateJsonWithSchema } from '@/lib/ai-json';
@@ -28,18 +29,18 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ä½ æ˜¯ä¸¥æ ¼è¯„åˆ†åŠ©æ‰‹ã€‚è¯·å¯¹ç”¨æˆ·ç­”æ¡ˆè¿›è¡Œè¯„åˆ†ä¸åé¦ˆã€‚
-è¯„åˆ†èŒƒå›´ï¼š0-${maxScore} åˆ†ã€‚
-é¢˜å‹ï¼š${questionType || 'short_answer'}
-é¢˜ç›®ï¼š${question}
-å‚è€ƒç­”æ¡ˆï¼š${referenceAnswer || 'æ— '}
-ç”¨æˆ·ç­”æ¡ˆï¼š${userAnswer}
-é™„åŠ è¦æ±‚ï¼š${additionalPrompt || 'æ— '}
+ÄãÊÇÑÏ¸ñÆÀ·ÖÖúÊÖ¡£Çë¶ÔÓÃ»§´ğ°¸½øĞĞÆÀ·ÖÓë·´À¡¡£
+ÆÀ·Ö·¶Î§£º0-${maxScore} ·Ö¡£
+ÌâĞÍ£º${questionType || 'short_answer'}
+ÌâÄ¿£º${question}
+²Î¿¼´ğ°¸£º${referenceAnswer || 'ÎŞ'}
+ÓÃ»§´ğ°¸£º${userAnswer}
+¸½¼ÓÒªÇó£º${additionalPrompt || 'ÎŞ'}
 
-è¾“å‡ºè¦æ±‚ï¼š
-1. scoreï¼š0-${maxScore} çš„æ•°å­—ï¼Œå¯ä¿ç•™ä¸€ä½å°æ•°ã€‚
-2. feedbackï¼šè¯´æ˜å¾—åˆ†ä¾æ®ï¼ˆç®€æ´ï¼‰ã€‚
-3. adviceï¼šç»™å‡ºä¸‹ä¸€æ­¥æ”¹è¿›å»ºè®®ï¼ˆå¯æ‰§è¡Œï¼‰ã€‚
+Êä³öÒªÇó£º
+1. score£º0-${maxScore} µÄÊı×Ö£¬¿É±£ÁôÒ»Î»Ğ¡Êı¡£
+2. feedback£ºËµÃ÷µÃ·ÖÒÀ¾İ£¨¼ò½à£©¡£
+3. advice£º¸ø³öÏÂÒ»²½¸Ä½ø½¨Òé£¨¿ÉÖ´ĞĞ£©¡£
 `;
 
     const result = await generateJsonWithSchema({

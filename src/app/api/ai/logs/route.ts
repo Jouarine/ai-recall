@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { clearAiLogs, readAiLogs } from '@/lib/ai-debug-log';
 

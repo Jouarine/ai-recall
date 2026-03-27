@@ -1,4 +1,5 @@
-ï»¿import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { saveMaterialSource } from '@/lib/material-source-store';
 
@@ -43,7 +44,7 @@ const buildQuestionPayload = (question: QuestionInput | undefined, fallbackName:
     };
   }
 
-  const stem = (question?.stem || '').trim() || `è¯·å›ç­”ï¼š${fallbackName}`;
+  const stem = (question?.stem || '').trim() || `Çë»Ø´ğ£º${fallbackName}`;
   const options = (question?.options || []).map((item) => item.trim()).filter(Boolean);
   const reference = (question?.referenceAnswer || '').trim() || fallbackName;
 
@@ -111,11 +112,11 @@ export async function POST(request: Request) {
         userId: user.id,
         chapters: {
           create: chapters.map((ch, i) => ({
-            name: ch.name || 'æœªå‘½åç« èŠ‚',
+            name: ch.name || 'Î´ÃüÃûÕÂ½Ú',
             orderIndex: i,
             knowledgePoints: {
               create: (ch.knowledgePoints || []).map((kp, j) => {
-                const kpName = kp.name || 'æœªå‘½åçŸ¥è¯†ç‚¹';
+                const kpName = kp.name || 'Î´ÃüÃûÖªÊ¶µã';
                 const questionPayload = buildQuestionPayload(kp.question, kpName);
                 return {
                   name: kpName,

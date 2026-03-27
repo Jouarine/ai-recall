@@ -1,4 +1,5 @@
-ï»¿import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export async function GET() {
@@ -42,7 +43,7 @@ export async function GET() {
               id: question.id,
               type: 'short_answer',
               knowledgePointId: kp.id,
-              question: question.qaQuestion || 'ç®€ç­”é¢˜',
+              question: question.qaQuestion || '¼ò´ðÌâ',
               referenceAnswer: question.qaReferenceAnswer || '',
               isStarred: question.isStarred,
             },

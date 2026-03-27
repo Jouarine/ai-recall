@@ -1,4 +1,5 @@
-ï»¿import { streamText, convertToModelMessages, type UIMessage } from 'ai';
+export const runtime = 'nodejs';
+import { streamText, convertToModelMessages, type UIMessage } from 'ai';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
 import { appendAiLog } from '@/lib/ai-debug-log';
 
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const systemBase =
-      'ä½ æ˜¯ä¸€ä¸ªæ¸©å’Œã€è€å¿ƒã€å¾ªå¾ªå–„è¯±çš„ AI å­¦ä¹ å¯¼å¸ˆã€‚å¦‚æœç”¨æˆ·æä¾›äº†ã€å½“å‰å­¦ä¹ æ®µè½ã€‘å’Œã€æˆ‘çš„é”™è¯¯å›ç­”è®°å½•ã€‘ï¼Œè¯·æŒ‡å‡ºè¯¯åŒºå¹¶é¡ºç€åŸæ–‡çŸ¥è¯†ç‚¹å¼•å¯¼ï¼Œä¸è¦ç›´æ¥ç»™æ ‡å‡†ç­”æ¡ˆã€‚å¤šç”¨ç±»æ¯”å’Œç®€æ˜è¯­è¨€ï¼Œå›ç­”ç²¾ç‚¼ã€‚';
+      'ÄãÊÇÒ»¸öÎÂºÍ¡¢ÄÍĞÄ¡¢Ñ­Ñ­ÉÆÓÕµÄ AI Ñ§Ï°µ¼Ê¦¡£Èç¹ûÓÃ»§Ìá¹©ÁË¡¾µ±Ç°Ñ§Ï°¶ÎÂä¡¿ºÍ¡¾ÎÒµÄ´íÎó»Ø´ğ¼ÇÂ¼¡¿£¬ÇëÖ¸³öÎóÇø²¢Ë³×ÅÔ­ÎÄÖªÊ¶µãÒıµ¼£¬²»ÒªÖ±½Ó¸ø±ê×¼´ğ°¸¡£¶àÓÃÀà±ÈºÍ¼òÃ÷ÓïÑÔ£¬»Ø´ğ¾«Á¶¡£';
     const systemPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}${systemBase}`;
 
     let textOutput = '';

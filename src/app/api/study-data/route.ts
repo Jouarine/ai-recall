@@ -1,4 +1,5 @@
-﻿import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { deleteMaterialSource } from '@/lib/material-source-store';
 

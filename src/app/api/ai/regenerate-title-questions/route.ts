@@ -1,4 +1,5 @@
-ï»¿import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
@@ -42,14 +43,14 @@ const normalizeBatchQuestions = (
 
 async function generateSingleQuestion(model: LanguageModel, promptTemplate: string, kp: KnowledgePointLite) {
   const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ä½ æ˜¯é«˜è´¨é‡å¡«ç©ºé¢˜åŠ©æ‰‹ï¼Œè¯·åªä¸ºè¿™ä¸ªçŸ¥è¯†ç‚¹ç”Ÿæˆ 1 é“å¡«ç©ºé¢˜ã€‚
-è¦æ±‚ï¼š
-1. sentence ä½¿ç”¨ {{blank_0}} å ä½ç¬¦æ ¼å¼ã€‚
-2. answers æŒ‰å ä½ç¬¦é¡ºåºè¿”å›žã€‚
-3. é¢˜ç›®å¿…é¡»å¿ äºŽåŽŸæ–‡ï¼Œä¸èƒ½ç¼–é€ ã€‚
+ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ£¬ÇëÖ»ÎªÕâ¸öÖªÊ¶µãÉú³É 1 µÀÌî¿ÕÌâ¡£
+ÒªÇó£º
+1. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
+2. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
+3. ÌâÄ¿±ØÐëÖÒÓÚÔ­ÎÄ£¬²»ÄÜ±àÔì¡£
 
-çŸ¥è¯†ç‚¹ï¼š${kp.name}
-åŽŸæ–‡ï¼š${kp.originalText}
+ÖªÊ¶µã£º${kp.name}
+Ô­ÎÄ£º${kp.originalText}
 `;
 
   return generateJsonWithSchema({
@@ -98,7 +99,7 @@ export async function POST(req: Request) {
 
     const reconstructedText = material.chapters
       .map((ch) =>
-        `ã€${ch.name}ã€‘\n${ch.knowledgePoints
+        `¡¾${ch.name}¡¿\n${ch.knowledgePoints
           .map((kp) => `${kp.name}\n${kp.originalText}`.trim())
           .join('\n\n')}`.trim()
       )
@@ -106,11 +107,11 @@ export async function POST(req: Request) {
 
     const storedSource = await getMaterialSource(materialId).catch(() => null);
     const sourceText = storedSource?.trim() || reconstructedText;
-    const sourceContext = `èµ„æ–™å…¨æ–‡ï¼š\n${sourceText}`;
+    const sourceContext = `×ÊÁÏÈ«ÎÄ£º\n${sourceText}`;
 
     const titlePrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ä½ æ˜¯å­¦ä¹ èµ„æ–™å‘½ååŠ©æ‰‹ã€‚è¯·æ ¹æ®èµ„æ–™å…¨æ–‡ä¸Žç« èŠ‚ç»“æž„ç”Ÿæˆä¸€ä¸ªç®€æ´ã€ä¸“ä¸šçš„ä¸­æ–‡æ ‡é¢˜ã€‚
-å½“å‰æ ‡é¢˜ï¼š${material.title}
+ÄãÊÇÑ§Ï°×ÊÁÏÃüÃûÖúÊÖ¡£Çë¸ù¾Ý×ÊÁÏÈ«ÎÄÓëÕÂ½Ú½á¹¹Éú³ÉÒ»¸ö¼ò½à¡¢×¨ÒµµÄÖÐÎÄ±êÌâ¡£
+µ±Ç°±êÌâ£º${material.title}
 ${sourceContext}
 `;
 
@@ -168,14 +169,14 @@ ${sourceContext}
     }
 
     const batchPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ä½ æ˜¯é«˜è´¨é‡å¡«ç©ºé¢˜åŠ©æ‰‹ã€‚è¯·ä¸ºæ¯ä¸ªçŸ¥è¯†ç‚¹å„ç”Ÿæˆ 1 é“å¡«ç©ºé¢˜ï¼Œå¿…é¡»è¦†ç›–å…¨éƒ¨çŸ¥è¯†ç‚¹ï¼Œä¸èƒ½é—æ¼ã€‚
-è¦æ±‚ï¼š
-1. å¿…é¡»ä¿ç•™ knowledgePointIdã€‚
-2. sentence ä½¿ç”¨ {{blank_0}} å ä½ç¬¦æ ¼å¼ã€‚
-3. answers æŒ‰å ä½ç¬¦é¡ºåºè¿”å›žã€‚
-4. ä¸èƒ½æ–°å¢žä¸åœ¨åˆ—è¡¨ä¸­çš„ knowledgePointIdã€‚
+ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ¡£ÇëÎªÃ¿¸öÖªÊ¶µã¸÷Éú³É 1 µÀÌî¿ÕÌâ£¬±ØÐë¸²¸ÇÈ«²¿ÖªÊ¶µã£¬²»ÄÜÒÅÂ©¡£
+ÒªÇó£º
+1. ±ØÐë±£Áô knowledgePointId¡£
+2. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
+3. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
+4. ²»ÄÜÐÂÔö²»ÔÚÁÐ±íÖÐµÄ knowledgePointId¡£
 
-çŸ¥è¯†ç‚¹åˆ—è¡¨ï¼š
+ÖªÊ¶µãÁÐ±í£º
 ${JSON.stringify(
   chapterAfterClear.knowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,

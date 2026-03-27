@@ -1,4 +1,5 @@
-﻿import { z } from 'zod';
+export const runtime = 'nodejs';
+import { z } from 'zod';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
 import { NextResponse } from 'next/server';
 import { generateJsonWithSchema, nonEmptyStringArray } from '@/lib/ai-json';
@@ -21,21 +22,21 @@ export async function POST(req: Request) {
 
     const historyPrompt =
       Array.isArray(usedBlanksHistory) && usedBlanksHistory.length > 0
-        ? `不要再次挖空这些词：${usedBlanksHistory.join('、')}`
-        : '请选择 1-3 个核心概念挖空。';
+        ? `��Ҫ�ٴ��ڿ���Щ�ʣ�${usedBlanksHistory.join('��')}`
+        : '��ѡ�� 1-3 �����ĸ����ڿա�';
 
     const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-你是严格的填空题出题助手。
-请基于下面原文生成一道高质量填空题，不能改变事实。
+�����ϸ�������������֡�
+���������ԭ������һ������������⣬���ܸı���ʵ��
 ${historyPrompt}
-附加提示词：${additionalPrompt || '无'}。
+������ʾ�ʣ�${additionalPrompt || '��'}��
 
-输出要求：
-1. sentence 使用 {{blank_0}}、{{blank_1}} 这种占位符。
-2. answers 按占位符顺序返回。
-3. 题目尽量覆盖核心概念。
+���Ҫ��
+1. sentence ʹ�� {{blank_0}}��{{blank_1}} ����ռλ����
+2. answers ��ռλ��˳�򷵻ء�
+3. ��Ŀ�������Ǻ��ĸ��
 
-原文：
+ԭ�ģ�
 ${originalText}
 `;
 

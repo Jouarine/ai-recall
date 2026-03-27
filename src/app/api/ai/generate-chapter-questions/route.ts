@@ -1,4 +1,5 @@
-ï»¿import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
@@ -31,14 +32,14 @@ async function generateSingleQuestion(
   knowledgePoint: KnowledgePointLite
 ) {
   const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ä½ æ˜¯é«˜è´¨é‡å¡«ç©ºé¢˜åŠ©æ‰‹ï¼Œè¯·åªä¸ºè¿™ä¸ªçŸ¥è¯†ç‚¹ç”Ÿæˆ 1 é“å¡«ç©ºé¢˜ã€‚
-è¦æ±‚ï¼š
-1. sentence ä½¿ç”¨ {{blank_0}} å ä½ç¬¦æ ¼å¼ã€‚
-2. answers æŒ‰å ä½ç¬¦é¡ºåºè¿”å›žã€‚
-3. é¢˜ç›®å¿…é¡»å¿ äºŽåŽŸæ–‡ï¼Œä¸èƒ½ç¼–é€ ã€‚
+ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ£¬ÇëÖ»ÎªÕâ¸öÖªÊ¶µãÉú³É 1 µÀÌî¿ÕÌâ¡£
+ÒªÇó£º
+1. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
+2. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
+3. ÌâÄ¿±ØÐëÖÒÓÚÔ­ÎÄ£¬²»ÄÜ±àÔì¡£
 
-çŸ¥è¯†ç‚¹ï¼š${knowledgePoint.name}
-åŽŸæ–‡ï¼š${knowledgePoint.originalText}
+ÖªÊ¶µã£º${knowledgePoint.name}
+Ô­ÎÄ£º${knowledgePoint.originalText}
 `;
 
   return generateJsonWithSchema({
@@ -83,14 +84,14 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const batchPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ä½ æ˜¯é«˜è´¨é‡å¡«ç©ºé¢˜åŠ©æ‰‹ã€‚è¯·ä¸ºæ¯ä¸ªçŸ¥è¯†ç‚¹å„ç”Ÿæˆ 1 é“å¡«ç©ºé¢˜ï¼Œå¿…é¡»è¦†ç›–å…¨éƒ¨çŸ¥è¯†ç‚¹ï¼Œä¸èƒ½é—æ¼ã€‚
-è¦æ±‚ï¼š
-1. å¿…é¡»ä¿ç•™ knowledgePointIdã€‚
-2. sentence ä½¿ç”¨ {{blank_0}} å ä½ç¬¦æ ¼å¼ã€‚
-3. answers æŒ‰å ä½ç¬¦é¡ºåºè¿”å›žã€‚
-4. ä¸èƒ½æ–°å¢žä¸åœ¨åˆ—è¡¨ä¸­çš„ knowledgePointIdã€‚
+ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ¡£ÇëÎªÃ¿¸öÖªÊ¶µã¸÷Éú³É 1 µÀÌî¿ÕÌâ£¬±ØÐë¸²¸ÇÈ«²¿ÖªÊ¶µã£¬²»ÄÜÒÅÂ©¡£
+ÒªÇó£º
+1. ±ØÐë±£Áô knowledgePointId¡£
+2. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
+3. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
+4. ²»ÄÜÐÂÔö²»ÔÚÁÐ±íÖÐµÄ knowledgePointId¡£
 
-çŸ¥è¯†ç‚¹åˆ—è¡¨ï¼š
+ÖªÊ¶µãÁÐ±í£º
 ${JSON.stringify(
   pendingKnowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,

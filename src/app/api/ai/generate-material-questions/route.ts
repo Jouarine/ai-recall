@@ -1,4 +1,5 @@
-ï»¿import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
@@ -63,25 +64,25 @@ export async function POST(req: Request) {
     const reconstructedText = material.chapters
       .map(
         (chapter) =>
-          `ã€${chapter.name}ã€‘\n${chapter.knowledgePoints
+          `¡¾${chapter.name}¡¿\n${chapter.knowledgePoints
             .map((kp) => `${kp.name}\n${kp.originalText}`.trim())
             .join('\n\n')}`.trim()
       )
       .join('\n\n');
 
-    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}ä½ æ˜¯ä¸¥è°¨çš„å‡ºé¢˜åŠ©æ‰‹ã€‚
-ä»»åŠ¡ï¼šä¸ºä¸‹æ–¹æ¯ä¸ªçŸ¥è¯†ç‚¹ç”Ÿæˆ 1 é“å¡«ç©ºé¢˜ï¼Œå¿…é¡»è¦†ç›–å…¨éƒ¨çŸ¥è¯†ç‚¹ï¼Œä¸èƒ½é—æ¼ã€‚
-è§„åˆ™ï¼š
-1. åªè¾“å‡ºé¢˜ç›®æ•°æ®ï¼Œä¸è¦è§£é‡Šã€‚
-2. æ¯é¢˜ä¿ç•™ knowledgePointIdã€‚
-3. sentence ä½¿ç”¨ {{blank_0}} æ ·å¼å ä½ç¬¦ã€‚
-4. answers ä¸Žå ä½ç¬¦é¡ºåºä¸€è‡´ã€‚
-5. é¢˜å¹²å¿…é¡»åŸºäºŽåŽŸæ–‡ï¼Œä¸èƒ½ç¼–é€ ã€‚
+    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}ÄãÊÇÑÏ½÷µÄ³öÌâÖúÊÖ¡£
+ÈÎÎñ£ºÎªÏÂ·½Ã¿¸öÖªÊ¶µãÉú³É 1 µÀÌî¿ÕÌâ£¬±ØÐë¸²¸ÇÈ«²¿ÖªÊ¶µã£¬²»ÄÜÒÅÂ©¡£
+¹æÔò£º
+1. Ö»Êä³öÌâÄ¿Êý¾Ý£¬²»Òª½âÊÍ¡£
+2. Ã¿Ìâ±£Áô knowledgePointId¡£
+3. sentence Ê¹ÓÃ {{blank_0}} ÑùÊ½Õ¼Î»·û¡£
+4. answers ÓëÕ¼Î»·ûË³ÐòÒ»ÖÂ¡£
+5. Ìâ¸É±ØÐë»ùÓÚÔ­ÎÄ£¬²»ÄÜ±àÔì¡£
 
-èµ„æ–™å…¨æ–‡ï¼š
+×ÊÁÏÈ«ÎÄ£º
 ${reconstructedText}
 
-ç›®æ ‡çŸ¥è¯†ç‚¹åˆ—è¡¨ï¼š
+Ä¿±êÖªÊ¶µãÁÐ±í£º
 ${JSON.stringify(
   targetKnowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,
