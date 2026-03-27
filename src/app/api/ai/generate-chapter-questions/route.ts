@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
@@ -32,9 +33,9 @@ async function generateSingleQuestion(
   knowledgePoint: KnowledgePointLite
 ) {
   const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-浣犳槸楂樿川閲忓～绌洪鍔╂墜锛岃鍙负杩欎釜鐭ヨ瘑鐐圭敓鎴?1 閬撳～绌洪銆?瑕佹眰锛?1. sentence 浣跨敤 {{blank_0}} 鍗犱綅绗︽牸寮忋€?2. answers 鎸夊崰浣嶇椤哄簭杩斿洖銆?3. 棰樼洰蹇呴』蹇犱簬鍘熸枃锛屼笉鑳界紪閫犮€?
-鐭ヨ瘑鐐癸細${knowledgePoint.name}
-鍘熸枃锛?{knowledgePoint.originalText}
+娴ｇ姵妲告妯垮窛闁插繐锝炵粚娲暯閸斺晜澧滈敍宀冾嚞閸欘亙璐熸潻娆庨嚋閻儴鐦戦悙鍦晸閹?1 闁挸锝炵粚娲暯閵?鐟曚焦鐪伴敍?1. sentence 娴ｈ法鏁?{{blank_0}} 閸楃姳缍呯粭锔界壐瀵繈鈧?2. answers 閹稿宕版担宥囶儊妞ゅ搫绨潻鏂挎礀閵?3. 妫版娲拌箛鍛淬€忚箛鐘辩艾閸樼喐鏋冮敍灞肩瑝閼崇晫绱柅鐘偓?
+閻儴鐦戦悙鐧哥窗${knowledgePoint.name}
+閸樼喐鏋冮敍?{knowledgePoint.originalText}
 `;
 
   return generateJsonWithSchema({
@@ -79,9 +80,8 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const batchPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-浣犳槸楂樿川閲忓～绌洪鍔╂墜銆傝涓烘瘡涓煡璇嗙偣鍚勭敓鎴?1 閬撳～绌洪锛屽繀椤昏鐩栧叏閮ㄧ煡璇嗙偣锛屼笉鑳介仐婕忋€?瑕佹眰锛?1. 蹇呴』淇濈暀 knowledgePointId銆?2. sentence 浣跨敤 {{blank_0}} 鍗犱綅绗︽牸寮忋€?3. answers 鎸夊崰浣嶇椤哄簭杩斿洖銆?4. 涓嶈兘鏂板涓嶅湪鍒楄〃涓殑 knowledgePointId銆?
-鐭ヨ瘑鐐瑰垪琛細
-${JSON.stringify(
+娴ｇ姵妲告妯垮窛闁插繐锝炵粚娲暯閸斺晜澧滈妴鍌濐嚞娑撶儤鐦℃稉顏嗙叀鐠囧棛鍋ｉ崥鍕晸閹?1 闁挸锝炵粚娲暯閿涘苯绻€妞ゆ槒顩惄鏍у弿闁劎鐓＄拠鍡欏仯閿涘奔绗夐懗浠嬩粣濠曞繈鈧?鐟曚焦鐪伴敍?1. 韫囧懘銆忔穱婵堟殌 knowledgePointId閵?2. sentence 娴ｈ法鏁?{{blank_0}} 閸楃姳缍呯粭锔界壐瀵繈鈧?3. answers 閹稿宕版担宥囶儊妞ゅ搫绨潻鏂挎礀閵?4. 娑撳秷鍏橀弬鏉款杻娑撳秴婀崚妤勩€冩稉顓犳畱 knowledgePointId閵?
+閻儴鐦戦悙鐟板灙鐞涱煉绱?${JSON.stringify(
   pendingKnowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,
     name: kp.name,
