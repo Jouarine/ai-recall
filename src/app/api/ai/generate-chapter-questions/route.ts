@@ -32,14 +32,9 @@ async function generateSingleQuestion(
   knowledgePoint: KnowledgePointLite
 ) {
   const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ£¬ÇëÖ»ÎªÕâ¸öÖªÊ¶µãÉú³É 1 µÀÌî¿ÕÌâ¡£
-ÒªÇó£º
-1. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
-2. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
-3. ÌâÄ¿±ØÐëÖÒÓÚÔ­ÎÄ£¬²»ÄÜ±àÔì¡£
-
-ÖªÊ¶µã£º${knowledgePoint.name}
-Ô­ÎÄ£º${knowledgePoint.originalText}
+æµ£çŠ³æ§¸æ¥‚æ¨¿å·é–²å¿“ï½žç»Œæ´ªî•½é”â•‚å¢œé”›å²ƒî‡¬é™îƒè´Ÿæ©æ¬Žé‡œé­ãƒ¨ç˜‘éåœ­æ•“éŽ´?1 é–¬æ’³ï½žç»Œæ´ªî•½éŠ†?ç‘•ä½¹çœ°é”›?1. sentence æµ£è·¨æ•¤ {{blank_0}} é—çŠ±ç¶…ç»—ï¸½ç‰¸å¯®å¿‹â‚¬?2. answers éŽ¸å¤Šå´°æµ£å¶‡îƒæ¤¤å“„ç°­æ©æ–¿æ´–éŠ†?3. æ£°æ¨¼æ´°è¹‡å‘´ã€è¹‡çŠ±ç°¬é˜ç†¸æžƒé”›å±¼ç¬‰é‘³ç•Œç´ªé–«çŠ®â‚¬?
+é­ãƒ¨ç˜‘éç™¸ç´°${knowledgePoint.name}
+é˜ç†¸æžƒé”›?{knowledgePoint.originalText}
 `;
 
   return generateJsonWithSchema({
@@ -84,14 +79,8 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const batchPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ¡£ÇëÎªÃ¿¸öÖªÊ¶µã¸÷Éú³É 1 µÀÌî¿ÕÌâ£¬±ØÐë¸²¸ÇÈ«²¿ÖªÊ¶µã£¬²»ÄÜÒÅÂ©¡£
-ÒªÇó£º
-1. ±ØÐë±£Áô knowledgePointId¡£
-2. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
-3. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
-4. ²»ÄÜÐÂÔö²»ÔÚÁÐ±íÖÐµÄ knowledgePointId¡£
-
-ÖªÊ¶µãÁÐ±í£º
+æµ£çŠ³æ§¸æ¥‚æ¨¿å·é–²å¿“ï½žç»Œæ´ªî•½é”â•‚å¢œéŠ†å‚î‡¬æ¶“çƒ˜ç˜¡æ¶“î†ç…¡ç’‡å—™å£éšå‹­æ•“éŽ´?1 é–¬æ’³ï½žç»Œæ´ªî•½é”›å±½ç¹€æ¤¤æ˜î›«é©æ §åé–®ã„§ç…¡ç’‡å—™å£é”›å±¼ç¬‰é‘³ä»‹ä»å©•å¿‹â‚¬?ç‘•ä½¹çœ°é”›?1. è¹‡å‘´ã€æ·‡æ¿ˆæš€ knowledgePointIdéŠ†?2. sentence æµ£è·¨æ•¤ {{blank_0}} é—çŠ±ç¶…ç»—ï¸½ç‰¸å¯®å¿‹â‚¬?3. answers éŽ¸å¤Šå´°æµ£å¶‡îƒæ¤¤å“„ç°­æ©æ–¿æ´–éŠ†?4. æ¶“å¶ˆå…˜é‚æ¿î–ƒæ¶“å¶…æ¹ªé’æ¥„ã€ƒæ¶“î… æ®‘ knowledgePointIdéŠ†?
+é­ãƒ¨ç˜‘éç‘°åžªç›îŸ’ç´°
 ${JSON.stringify(
   pendingKnowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,

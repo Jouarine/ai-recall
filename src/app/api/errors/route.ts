@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -29,24 +30,25 @@ export async function GET() {
       return {
         id: log.id,
         questionId: log.questionId,
-        question: question.type.toLowerCase() === 'cloze'
-          ? {
-              id: question.id,
-              type: 'cloze',
-              knowledgePointId: kp.id,
-              originalText: kp.originalText,
-              displayText: question.displayText || kp.originalText,
-              blanks: [],
-              isStarred: question.isStarred,
-            }
-          : {
-              id: question.id,
-              type: 'short_answer',
-              knowledgePointId: kp.id,
-              question: question.qaQuestion || 'ºÚ¥Ã‚',
-              referenceAnswer: question.qaReferenceAnswer || '',
-              isStarred: question.isStarred,
-            },
+        question:
+          question.type.toLowerCase() === 'cloze'
+            ? {
+                id: question.id,
+                type: 'cloze',
+                knowledgePointId: kp.id,
+                originalText: kp.originalText,
+                displayText: question.displayText || kp.originalText,
+                blanks: [],
+                isStarred: question.isStarred,
+              }
+            : {
+                id: question.id,
+                type: 'short_answer',
+                knowledgePointId: kp.id,
+                question: question.qaQuestion || 'Êú™ÂëΩÂêçÈ¢òÁõÆ',
+                referenceAnswer: question.qaReferenceAnswer || '',
+                isStarred: question.isStarred,
+              },
         chapterName: chapter.name,
         knowledgePointName: kp.name,
         errorCount: log.errorCount,
@@ -65,7 +67,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { questionId, userWrongAnswer } = body;
+    const { questionId, userWrongAnswer } = body as {
+      questionId?: string;
+      userWrongAnswer?: string;
+    };
 
     if (!questionId) {
       return NextResponse.json({ error: 'questionId is required' }, { status: 400 });

@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { z } from 'zod';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
 import { NextResponse } from 'next/server';
@@ -22,21 +23,19 @@ export async function POST(req: Request) {
 
     const historyPrompt =
       Array.isArray(usedBlanksHistory) && usedBlanksHistory.length > 0
-        ? `��Ҫ�ٴ��ڿ���Щ�ʣ�${usedBlanksHistory.join('��')}`
-        : '��ѡ�� 1-3 �����ĸ����ڿա�';
+        ? `以下答案已用过，请避免重复：${usedBlanksHistory.join('、')}`
+        : '请生成 1-3 个高价值空，覆盖关键概念。';
 
     const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-�����ϸ�������������֡�
-���������ԭ������һ������������⣬���ܸı���ʵ��
+你是出题助手。请根据给定原文生成一道填空题，并严格输出 JSON。
+要求：
+1. sentence 中用 {{blank_0}}、{{blank_1}} 这类占位符表示空。
+2. answers 按占位符顺序给出标准答案。
+3. 不要输出解释文本。
 ${historyPrompt}
-������ʾ�ʣ�${additionalPrompt || '��'}��
+附加要求：${additionalPrompt || '无'}
 
-���Ҫ��
-1. sentence ʹ�� {{blank_0}}��{{blank_1}} ����ռλ����
-2. answers ��ռλ��˳�򷵻ء�
-3. ��Ŀ�������Ǻ��ĸ��
-
-ԭ�ģ�
+原文：
 ${originalText}
 `;
 

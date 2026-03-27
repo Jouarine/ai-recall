@@ -43,14 +43,9 @@ const normalizeBatchQuestions = (
 
 async function generateSingleQuestion(model: LanguageModel, promptTemplate: string, kp: KnowledgePointLite) {
   const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ£¬ÇëÖ»ÎªÕâ¸öÖªÊ¶µãÉú³É 1 µÀÌî¿ÕÌâ¡£
-ÒªÇó£º
-1. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
-2. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
-3. ÌâÄ¿±ØÐëÖÒÓÚÔ­ÎÄ£¬²»ÄÜ±àÔì¡£
-
-ÖªÊ¶µã£º${kp.name}
-Ô­ÎÄ£º${kp.originalText}
+æµ£çŠ³æ§¸æ¥‚æ¨¿å·é–²å¿“ï½žç»Œæ´ªî•½é”â•‚å¢œé”›å²ƒî‡¬é™îƒè´Ÿæ©æ¬Žé‡œé­ãƒ¨ç˜‘éåœ­æ•“éŽ´?1 é–¬æ’³ï½žç»Œæ´ªî•½éŠ†?ç‘•ä½¹çœ°é”›?1. sentence æµ£è·¨æ•¤ {{blank_0}} é—çŠ±ç¶…ç»—ï¸½ç‰¸å¯®å¿‹â‚¬?2. answers éŽ¸å¤Šå´°æµ£å¶‡îƒæ¤¤å“„ç°­æ©æ–¿æ´–éŠ†?3. æ£°æ¨¼æ´°è¹‡å‘´ã€è¹‡çŠ±ç°¬é˜ç†¸æžƒé”›å±¼ç¬‰é‘³ç•Œç´ªé–«çŠ®â‚¬?
+é­ãƒ¨ç˜‘éç™¸ç´°${kp.name}
+é˜ç†¸æžƒé”›?{kp.originalText}
 `;
 
   return generateJsonWithSchema({
@@ -99,7 +94,7 @@ export async function POST(req: Request) {
 
     const reconstructedText = material.chapters
       .map((ch) =>
-        `¡¾${ch.name}¡¿\n${ch.knowledgePoints
+        `éŠ†?{ch.name}éŠ†æ…­n${ch.knowledgePoints
           .map((kp) => `${kp.name}\n${kp.originalText}`.trim())
           .join('\n\n')}`.trim()
       )
@@ -107,11 +102,10 @@ export async function POST(req: Request) {
 
     const storedSource = await getMaterialSource(materialId).catch(() => null);
     const sourceText = storedSource?.trim() || reconstructedText;
-    const sourceContext = `×ÊÁÏÈ«ÎÄ£º\n${sourceText}`;
+    const sourceContext = `ç’§å‹¬æž¡éã„¦æžƒé”›æ­•n${sourceText}`;
 
     const titlePrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ÄãÊÇÑ§Ï°×ÊÁÏÃüÃûÖúÊÖ¡£Çë¸ù¾Ý×ÊÁÏÈ«ÎÄÓëÕÂ½Ú½á¹¹Éú³ÉÒ»¸ö¼ò½à¡¢×¨ÒµµÄÖÐÎÄ±êÌâ¡£
-µ±Ç°±êÌâ£º${material.title}
+æµ£çŠ³æ§¸ç€›ï¸¿ç¯„ç’§å‹¬æž¡é›è—‰æ‚•é”â•‚å¢œéŠ†å‚î‡¬éè§„åµç’§å‹¬æž¡éã„¦æžƒæ¶“åº£ç·é‘ºå‚œç²¨é‹å‹­æ•“éŽ´æ„ªç«´æ¶“î†ç•å¨²ä½µâ‚¬ä½·ç¬“æ¶“æ°±æ®‘æ¶“î…Ÿæžƒéå›¬î•½éŠ†?è¤°æ’³å¢ éå›¬î•½é”›?{material.title}
 ${sourceContext}
 `;
 
@@ -169,14 +163,8 @@ ${sourceContext}
     }
 
     const batchPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ÄãÊÇ¸ßÖÊÁ¿Ìî¿ÕÌâÖúÊÖ¡£ÇëÎªÃ¿¸öÖªÊ¶µã¸÷Éú³É 1 µÀÌî¿ÕÌâ£¬±ØÐë¸²¸ÇÈ«²¿ÖªÊ¶µã£¬²»ÄÜÒÅÂ©¡£
-ÒªÇó£º
-1. ±ØÐë±£Áô knowledgePointId¡£
-2. sentence Ê¹ÓÃ {{blank_0}} Õ¼Î»·û¸ñÊ½¡£
-3. answers °´Õ¼Î»·ûË³Ðò·µ»Ø¡£
-4. ²»ÄÜÐÂÔö²»ÔÚÁÐ±íÖÐµÄ knowledgePointId¡£
-
-ÖªÊ¶µãÁÐ±í£º
+æµ£çŠ³æ§¸æ¥‚æ¨¿å·é–²å¿“ï½žç»Œæ´ªî•½é”â•‚å¢œéŠ†å‚î‡¬æ¶“çƒ˜ç˜¡æ¶“î†ç…¡ç’‡å—™å£éšå‹­æ•“éŽ´?1 é–¬æ’³ï½žç»Œæ´ªî•½é”›å±½ç¹€æ¤¤æ˜î›«é©æ §åé–®ã„§ç…¡ç’‡å—™å£é”›å±¼ç¬‰é‘³ä»‹ä»å©•å¿‹â‚¬?ç‘•ä½¹çœ°é”›?1. è¹‡å‘´ã€æ·‡æ¿ˆæš€ knowledgePointIdéŠ†?2. sentence æµ£è·¨æ•¤ {{blank_0}} é—çŠ±ç¶…ç»—ï¸½ç‰¸å¯®å¿‹â‚¬?3. answers éŽ¸å¤Šå´°æµ£å¶‡îƒæ¤¤å“„ç°­æ©æ–¿æ´–éŠ†?4. æ¶“å¶ˆå…˜é‚æ¿î–ƒæ¶“å¶…æ¹ªé’æ¥„ã€ƒæ¶“î… æ®‘ knowledgePointIdéŠ†?
+é­ãƒ¨ç˜‘éç‘°åžªç›îŸ’ç´°
 ${JSON.stringify(
   chapterAfterClear.knowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,

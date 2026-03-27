@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { streamText, convertToModelMessages, type UIMessage } from 'ai';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
 import { appendAiLog } from '@/lib/ai-debug-log';
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
     const promptTemplate = getPromptTemplate(req);
 
     const systemBase =
-      'ÄãÊÇÒ»¸öÎÂºÍ¡¢ÄÍĞÄ¡¢Ñ­Ñ­ÉÆÓÕµÄ AI Ñ§Ï°µ¼Ê¦¡£Èç¹ûÓÃ»§Ìá¹©ÁË¡¾µ±Ç°Ñ§Ï°¶ÎÂä¡¿ºÍ¡¾ÎÒµÄ´íÎó»Ø´ğ¼ÇÂ¼¡¿£¬ÇëÖ¸³öÎóÇø²¢Ë³×ÅÔ­ÎÄÖªÊ¶µãÒıµ¼£¬²»ÒªÖ±½Ó¸ø±ê×¼´ğ°¸¡£¶àÓÃÀà±ÈºÍ¼òÃ÷ÓïÑÔ£¬»Ø´ğ¾«Á¶¡£';
+      'ä½ æ˜¯å­¦ä¹ åŠ©æ‰‹ã€‚è¯·åŸºäºç”¨æˆ·å½“å‰é¢˜ç›®ä¸ä¸Šä¸‹æ–‡ï¼Œæä¾›æ¸…æ™°ã€å‡†ç¡®ã€å¯æ‰§è¡Œçš„è®²è§£ä¸å»ºè®®ã€‚ä¼˜å…ˆç»™å‡ºç»“è®ºï¼Œå†è¡¥å……åŸå› ã€‚';
     const systemPrompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}${systemBase}`;
 
     let textOutput = '';

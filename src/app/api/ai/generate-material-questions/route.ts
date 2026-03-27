@@ -64,25 +64,16 @@ export async function POST(req: Request) {
     const reconstructedText = material.chapters
       .map(
         (chapter) =>
-          `¡¾${chapter.name}¡¿\n${chapter.knowledgePoints
+          `éŠ†?{chapter.name}éŠ†æ…­n${chapter.knowledgePoints
             .map((kp) => `${kp.name}\n${kp.originalText}`.trim())
             .join('\n\n')}`.trim()
       )
       .join('\n\n');
 
-    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}ÄãÊÇÑÏ½÷µÄ³öÌâÖúÊÖ¡£
-ÈÎÎñ£ºÎªÏÂ·½Ã¿¸öÖªÊ¶µãÉú³É 1 µÀÌî¿ÕÌâ£¬±ØÐë¸²¸ÇÈ«²¿ÖªÊ¶µã£¬²»ÄÜÒÅÂ©¡£
-¹æÔò£º
-1. Ö»Êä³öÌâÄ¿Êý¾Ý£¬²»Òª½âÊÍ¡£
-2. Ã¿Ìâ±£Áô knowledgePointId¡£
-3. sentence Ê¹ÓÃ {{blank_0}} ÑùÊ½Õ¼Î»·û¡£
-4. answers ÓëÕ¼Î»·ûË³ÐòÒ»ÖÂ¡£
-5. Ìâ¸É±ØÐë»ùÓÚÔ­ÎÄ£¬²»ÄÜ±àÔì¡£
+    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}æµ£çŠ³æ§¸æ¶“ãƒ¨çš‘é¨å‹«åš­æ£°æ¨ºå§ªéŽµå¬¨â‚¬?æµ è¯²å§Ÿé”›æ°«è´Ÿæ¶“å¬«æŸŸå§£å¿Žé‡œé­ãƒ¨ç˜‘éåœ­æ•“éŽ´?1 é–¬æ’³ï½žç»Œæ´ªî•½é”›å±½ç¹€æ¤¤æ˜î›«é©æ §åé–®ã„§ç…¡ç’‡å—™å£é”›å±¼ç¬‰é‘³ä»‹ä»å©•å¿‹â‚¬?ç‘™å‹«åž¯é”›?1. é™î‡ç·­é‘æ´ªî•½é©î†½æšŸéŽ¹î‡†ç´æ¶“å¶ˆî›¦ç‘™ï½‰å™´éŠ†?2. å§£å¿›î•½æ·‡æ¿ˆæš€ knowledgePointIdéŠ†?3. sentence æµ£è·¨æ•¤ {{blank_0}} éå³°ç´¡é—çŠ±ç¶…ç»—ï¸ºâ‚¬?4. answers æ¶“åº¡å´°æµ£å¶‡îƒæ¤¤å“„ç°­æ¶“â‚¬é‘·æ·¬â‚¬?5. æ£°æ¨ºå…±è¹‡å‘´ã€é©è½°ç°¬é˜ç†¸æžƒé”›å±¼ç¬‰é‘³ç•Œç´ªé–«çŠ®â‚¬?
+ç’§å‹¬æž¡éã„¦æžƒé”›?${reconstructedText}
 
-×ÊÁÏÈ«ÎÄ£º
-${reconstructedText}
-
-Ä¿±êÖªÊ¶µãÁÐ±í£º
+é©î†½çˆ£é­ãƒ¨ç˜‘éç‘°åžªç›îŸ’ç´°
 ${JSON.stringify(
   targetKnowledgePoints.map((kp) => ({
     knowledgePointId: kp.id,

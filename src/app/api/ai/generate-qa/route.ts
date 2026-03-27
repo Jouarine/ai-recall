@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { z } from 'zod';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
 import { NextResponse } from 'next/server';
@@ -20,25 +21,23 @@ export async function POST(req: Request) {
 
     const model = getAiAdapter(req);
     const promptTemplate = getPromptTemplate(req);
-
     const normalizedType = String(questionType).toLowerCase();
 
     const typeInstruction =
       normalizedType === 'choice'
-        ? 'ÇëÉú³É 1 µÀÑ¡ÔñÌâ£¬¸½ 4 ¸öÑ¡Ïî£¨options£©£¬²¢¸ø³öÎ¨Ò»ÕıÈ·´ğ°¸ referenceAnswer¡£'
+        ? 'ç”Ÿæˆ 1 é“å››é€‰ä¸€é€‰æ‹©é¢˜ï¼Œå¿…é¡»åŒ…å« options(4é¡¹) å’Œ referenceAnswerã€‚'
         : normalizedType === 'thinking'
-          ? 'ÇëÉú³É 1 µÀË¼¿¼Ìâ£¬Ç¿µ÷¹ÛµãÓëÍÆÀí£¬²¢¸ø³ö²Î¿¼×÷´ğ·½Ïò¡£'
+          ? 'ç”Ÿæˆ 1 é“æ€è€ƒé¢˜ï¼Œå¼ºè°ƒåˆ†æä¸æ¨ç†ï¼Œå¹¶ç»™å‡ºç®€æ˜å‚è€ƒç­”æ¡ˆã€‚'
           : normalizedType === 'application'
-            ? 'ÇëÉú³É 1 µÀÓ¦ÓÃÌâ£¬Ç¿µ÷½«ÖªÊ¶ÓÃÓÚ³¡¾°£¬²¢¸ø³ö²Î¿¼´ğ°¸¡£'
-            : 'ÇëÉú³É 1 µÀ¼ò´ğÌâ£¬²¢¸ø³ö²Î¿¼´ğ°¸¡£';
+            ? 'ç”Ÿæˆ 1 é“åº”ç”¨é¢˜ï¼Œå¼ºè°ƒæƒ…å¢ƒåº”ç”¨ï¼Œå¹¶ç»™å‡ºå‚è€ƒç­”æ¡ˆã€‚'
+            : 'ç”Ÿæˆ 1 é“ç®€ç­”é¢˜ï¼Œå¹¶ç»™å‡ºå‚è€ƒç­”æ¡ˆã€‚';
 
     const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
-ÄãÊÇÑ§Ï°¸¨µ¼ÀÏÊ¦¡£
+ä½ æ˜¯å‡ºé¢˜åŠ©æ‰‹ã€‚è¯·åŸºäºåŸæ–‡ç”Ÿæˆé¢˜ç›®ï¼Œå¹¶ä¸¥æ ¼è¾“å‡º JSONã€‚
 ${typeInstruction}
-ÌâÄ¿±ØĞë»ùÓÚÔ­ÎÄ£¬²»µÃ±àÔì¡£
-¸½¼ÓÌáÊ¾´Ê£º${additionalPrompt || 'ÎŞ'}¡£
+é™„åŠ è¦æ±‚ï¼š${additionalPrompt || 'æ— '}
 
-Ô­ÎÄ£º
+åŸæ–‡ï¼š
 ${originalText}
 `;
 

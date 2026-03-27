@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { saveMaterialSource } from '@/lib/material-source-store';
@@ -44,13 +45,14 @@ const buildQuestionPayload = (question: QuestionInput | undefined, fallbackName:
     };
   }
 
-  const stem = (question?.stem || '').trim() || `Çë»Ø´ğ£º${fallbackName}`;
+  const stem = (question?.stem || '').trim() || `è¯·æ ¹æ®çŸ¥è¯†ç‚¹ä½œç­”ï¼š${fallbackName}`;
   const options = (question?.options || []).map((item) => item.trim()).filter(Boolean);
   const reference = (question?.referenceAnswer || '').trim() || fallbackName;
 
-  const formattedStem = type === 'choice' && options.length
-    ? `${stem}\n${options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')}`
-    : stem;
+  const formattedStem =
+    type === 'choice' && options.length
+      ? `${stem}\n${options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')}`
+      : stem;
 
   return {
     type,
@@ -90,12 +92,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { title, chapters, sourceText } = body as {
+    const body = (await request.json()) as {
       title?: string;
       chapters?: ChapterInput[];
       sourceText?: string;
     };
+    const { title, chapters, sourceText } = body;
 
     let user = await prisma.user.findFirst();
     if (!user) {
@@ -111,17 +113,17 @@ export async function POST(request: Request) {
         title,
         userId: user.id,
         chapters: {
-          create: chapters.map((ch, i) => ({
-            name: ch.name || 'Î´ÃüÃûÕÂ½Ú',
-            orderIndex: i,
+          create: chapters.map((chapter, chapterIndex) => ({
+            name: chapter.name || 'æœªå‘½åç« èŠ‚',
+            orderIndex: chapterIndex,
             knowledgePoints: {
-              create: (ch.knowledgePoints || []).map((kp, j) => {
-                const kpName = kp.name || 'Î´ÃüÃûÖªÊ¶µã';
-                const questionPayload = buildQuestionPayload(kp.question, kpName);
+              create: (chapter.knowledgePoints || []).map((knowledgePoint, pointIndex) => {
+                const kpName = knowledgePoint.name || 'æœªå‘½åçŸ¥è¯†ç‚¹';
+                const questionPayload = buildQuestionPayload(knowledgePoint.question, kpName);
                 return {
                   name: kpName,
-                  originalText: kp.originalText || '',
-                  orderIndex: j,
+                  originalText: knowledgePoint.originalText || '',
+                  orderIndex: pointIndex,
                   questions: questionPayload ? { create: [questionPayload] } : undefined,
                 };
               }),

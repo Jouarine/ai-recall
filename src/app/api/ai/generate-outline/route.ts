@@ -1,4 +1,5 @@
 export const runtime = 'nodejs';
+
 import { z } from 'zod';
 import { NextResponse } from 'next/server';
 import { getAiAdapter, getPromptTemplate } from '@/lib/ai-adapter';
@@ -33,20 +34,18 @@ const looseSchema = z.object({
 const pickString = (obj: Record<string, unknown>, keys: string[]): string | null => {
   for (const key of keys) {
     const value = obj[key];
-    if (typeof value === 'string' && value.trim()) {
-      return value.trim();
-    }
+    if (typeof value === 'string' && value.trim()) return value.trim();
   }
   return null;
 };
 
 const normalizeType = (rawType: string, allowedTypes: string[]): string => {
   const t = rawType.toLowerCase().trim();
-  if (['choice', 'multiple_choice', 'Ñ¡ÔñÌâ'].includes(t)) return allowedTypes.includes('choice') ? 'choice' : allowedTypes[0];
-  if (['cloze', 'fill', 'fill_blank', 'Ìî¿ÕÌâ'].includes(t)) return allowedTypes.includes('cloze') ? 'cloze' : allowedTypes[0];
-  if (['short_answer', 'qa', '¼ò´ğÌâ'].includes(t)) return allowedTypes.includes('short_answer') ? 'short_answer' : allowedTypes[0];
-  if (['thinking', 'Ë¼¿¼Ìâ'].includes(t)) return allowedTypes.includes('thinking') ? 'thinking' : allowedTypes[0];
-  if (['application', 'Ó¦ÓÃÌâ', 'case'].includes(t)) return allowedTypes.includes('application') ? 'application' : allowedTypes[0];
+  if (['choice', 'multiple_choice', 'é€‰æ‹©é¢˜'].includes(t)) return allowedTypes.includes('choice') ? 'choice' : allowedTypes[0];
+  if (['cloze', 'fill', 'fill_blank', 'å¡«ç©ºé¢˜'].includes(t)) return allowedTypes.includes('cloze') ? 'cloze' : allowedTypes[0];
+  if (['short_answer', 'qa', 'ç®€ç­”é¢˜'].includes(t)) return allowedTypes.includes('short_answer') ? 'short_answer' : allowedTypes[0];
+  if (['thinking', 'æ€è€ƒé¢˜'].includes(t)) return allowedTypes.includes('thinking') ? 'thinking' : allowedTypes[0];
+  if (['application', 'åº”ç”¨é¢˜', 'case'].includes(t)) return allowedTypes.includes('application') ? 'application' : allowedTypes[0];
   return allowedTypes[0] || 'cloze';
 };
 
@@ -54,7 +53,8 @@ const normalizeOutline = (raw: z.infer<typeof looseSchema>, allowedTypes: string
   const normalized = {
     chapters: raw.chapters.map((rawChapter, chapterIndex) => {
       const chapterName =
-        pickString(rawChapter, ['name', 'title', 'chapterName', 'chapter_title', 'ÕÂ½Ú', '±êÌâ']) || `µÚ${chapterIndex + 1}ÕÂ`;
+        pickString(rawChapter, ['name', 'title', 'chapterName', 'chapter_title', 'ç« èŠ‚å', 'ç« èŠ‚']) ||
+        `ç¬¬${chapterIndex + 1}ç« `;
 
       const kpRaw = rawChapter.knowledgePoints;
       const points = Array.isArray(kpRaw) ? kpRaw : [];
@@ -64,20 +64,23 @@ const normalizeOutline = (raw: z.infer<typeof looseSchema>, allowedTypes: string
           const kp = typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : {};
 
           const kpName =
-            pickString(kp, ['name', 'title', 'pointName', 'knowledgePointName', 'ÖªÊ¶µã', '±êÌâ']) || `ÖªÊ¶µã ${kpIndex + 1}`;
+            pickString(kp, ['name', 'title', 'pointName', 'knowledgePointName', 'çŸ¥è¯†ç‚¹å', 'çŸ¥è¯†ç‚¹']) ||
+            `çŸ¥è¯†ç‚¹${kpIndex + 1}`;
 
-          const originalText = pickString(kp, ['originalText', 'text', 'content', 'sourceText', 'Ô­ÎÄ']) || kpName;
+          const originalText = pickString(kp, ['originalText', 'text', 'content', 'sourceText', 'åŸæ–‡']) || kpName;
 
           const qRaw = (kp.question && typeof kp.question === 'object' ? kp.question : {}) as Record<string, unknown>;
           const questionType = normalizeType(
-            pickString(qRaw, ['type', 'questionType', 'ÌâĞÍ']) || pickString(kp, ['type']) || allowedTypes[0] || 'cloze',
+            pickString(qRaw, ['type', 'questionType', 'é¢˜å‹']) || pickString(kp, ['type']) || allowedTypes[0] || 'cloze',
             allowedTypes
           );
 
           const stem =
-            pickString(qRaw, ['stem', 'question', 'prompt']) || pickString(kp, ['stem', 'question']) || `Çë»Ø´ğ£º${kpName}`;
+            pickString(qRaw, ['stem', 'question', 'prompt']) ||
+            pickString(kp, ['stem', 'question']) ||
+            `è¯·æ ¹æ®çŸ¥è¯†ç‚¹ä½œç­”ï¼š${kpName}`;
 
-          const sentenceBase = pickString(qRaw, ['sentence']) || `ÇëÌîĞ´¸ÃÖªÊ¶µãÃû³Æ£º{{blank_0}}`;
+          const sentenceBase = pickString(qRaw, ['sentence']) || `è¯·æ ¹æ®çŸ¥è¯†ç‚¹å¡«ç©ºï¼š${kpName} {{blank_0}}`;
 
           const answersRaw = Array.isArray(qRaw.answers)
             ? qRaw.answers.filter((v): v is string => typeof v === 'string').map((v) => v.trim()).filter(Boolean)
@@ -88,11 +91,11 @@ const normalizeOutline = (raw: z.infer<typeof looseSchema>, allowedTypes: string
             : [];
 
           const referenceAnswer =
-            pickString(qRaw, ['referenceAnswer', 'answer', 'standardAnswer', '²Î¿¼´ğ°¸']) ||
+            pickString(qRaw, ['referenceAnswer', 'answer', 'standardAnswer', 'å‚è€ƒç­”æ¡ˆ']) ||
             (questionType === 'choice' ? optionsRaw[0] || kpName : kpName);
 
           if (questionType === 'cloze') {
-            const sentence = sentenceBase.includes('{{blank_') ? sentenceBase : 'ÇëÌîĞ´¸ÃÖªÊ¶µãÃû³Æ£º{{blank_0}}';
+            const sentence = sentenceBase.includes('{{blank_') ? sentenceBase : `è¯·æ ¹æ®çŸ¥è¯†ç‚¹å¡«ç©ºï¼š${kpName} {{blank_0}}`;
             const answers = answersRaw.length ? answersRaw : [kpName];
             nonEmptyStringArray.parse(answers);
             return {
@@ -112,7 +115,7 @@ const normalizeOutline = (raw: z.infer<typeof looseSchema>, allowedTypes: string
             question: {
               type: questionType,
               stem,
-              options: questionType === 'choice' ? (optionsRaw.length ? optionsRaw.slice(0, 4) : [kpName, 'Ñ¡ÏîB', 'Ñ¡ÏîC', 'Ñ¡ÏîD']) : undefined,
+              options: questionType === 'choice' ? (optionsRaw.length ? optionsRaw.slice(0, 4) : [kpName, 'é€‰é¡¹B', 'é€‰é¡¹C', 'é€‰é¡¹D']) : undefined,
               referenceAnswer,
             },
           };
@@ -137,17 +140,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Text content is required' }, { status: 400 });
     }
 
-    const safeTypes = Array.isArray(questionTypes) && questionTypes.length
-      ? questionTypes.filter((t: unknown): t is string => typeof t === 'string')
-      : ['cloze'];
+    const safeTypes =
+      Array.isArray(questionTypes) && questionTypes.length
+        ? questionTypes.filter((t: unknown): t is string => typeof t === 'string')
+        : ['cloze'];
 
     const model = getAiAdapter(req);
     const promptTemplate = getPromptTemplate(req);
 
-    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}ÄãÊÇ½Ì²Ä½á¹¹»¯Óë³öÌâÖúÊÖ¡£
-ÈÎÎñ£º°Ñ×ÊÁÏÒ»´ÎĞÔ²ğ³ÉÕÂ½ÚºÍÖªÊ¶µã£¬²¢ÎªÃ¿¸öÖªÊ¶µãÉú³É 1 µÀÌâ¡£
-ÌâĞÍ·¶Î§£º${safeTypes.join('¡¢')}¡£
-×Ö¶Î±ØĞëÊ¹ÓÃÒÔÏÂÃüÃû£º
+    const prompt = `${promptTemplate ? `${promptTemplate}\n\n` : ''}
+ä½ æ˜¯æ•™æç»“æ„åŒ–ä¸å‡ºé¢˜åŠ©æ‰‹ã€‚è¯·æŠŠå­¦ä¹ èµ„æ–™æ‹†åˆ†ä¸ºç« èŠ‚å’ŒçŸ¥è¯†ç‚¹ï¼Œå¹¶ä¸ºæ¯ä¸ªçŸ¥è¯†ç‚¹ç”Ÿæˆä¸€é“é¢˜ã€‚
+å…è®¸é¢˜å‹ï¼š${safeTypes.join('ã€')}
+å¿…é¡»è¾“å‡º JSONï¼Œå­—æ®µå›ºå®šä¸ºï¼š
 - chapters[].name
 - chapters[].knowledgePoints[].name
 - chapters[].knowledgePoints[].originalText
@@ -157,16 +161,18 @@ export async function POST(req: Request) {
 - chapters[].knowledgePoints[].question.answers
 - chapters[].knowledgePoints[].question.options
 - chapters[].knowledgePoints[].question.referenceAnswer
-¹æÔò£º
-1. cloze Ê¹ÓÃ sentence + answers¡£
-2. choice Ê¹ÓÃ stem + options + referenceAnswer¡£
-3. short_answer/thinking/application Ê¹ÓÃ stem + referenceAnswer¡£
-4. ±ØĞë¸²¸Ç×ÊÁÏÖĞµÄÈ«²¿ÕÂ½ÚºÍ¹Ø¼üÖªÊ¶µã£¬²»ÄÜÖ»·µ»ØÇ°¼¸ÕÂ¡£
-5. ½öÊä³ö JSON£¬²»ÒªËµÃ÷ÎÄ×Ö¡£
-¸½¼ÓÌáÊ¾´Ê£º${additionalPrompt || 'ÎŞ'}¡£
 
-×ÊÁÏ±êÌâ£º${title || 'Î´ÃüÃû×ÊÁÏ'}
-×ÊÁÏÕıÎÄ£º${text}
+è§„åˆ™ï¼š
+1. cloze ä½¿ç”¨ sentence + answersã€‚
+2. choice ä½¿ç”¨ stem + options + referenceAnswerã€‚
+3. short_answer / thinking / application ä½¿ç”¨ stem + referenceAnswerã€‚
+4. ä»…è¾“å‡º JSONï¼Œä¸è¦è§£é‡Šã€‚
+5. å°½é‡è¦†ç›–å…¨éƒ¨ç« èŠ‚ï¼Œä¸è¦åªç”Ÿæˆå‰å‡ ç« ã€‚
+
+é™„åŠ è¦æ±‚ï¼š${additionalPrompt || 'æ— '}
+èµ„æ–™æ ‡é¢˜ï¼š${title || 'æœªå‘½åèµ„æ–™'}
+èµ„æ–™æ­£æ–‡ï¼š
+${text}
 `;
 
     const looseResult = await generateJsonWithSchema({
