@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -28,6 +28,7 @@ model Material {
   userId   String
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   chapters Chapter[]
+  source   MaterialSource?
 }
 
 model Chapter {
@@ -91,4 +92,13 @@ model ErrorLog {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([questionId, userId])
+}
+
+model MaterialSource {
+  materialId  String   @id
+  sourceText  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
 }

@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+ok.env
 
 # vercel
 .vercel
@@ -44,6 +45,10 @@ next-env.d.ts
 
 # local IDE/cache
 .vs/
+
+# internal assistant docs
+AGENTS.md
+CLAUDE.md
 
 # local runtime data / logs
 data/ai-logs.jsonl

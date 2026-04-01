@@ -6,6 +6,7 @@
     "dev": "next dev --hostname 0.0.0.0 --port 3000",
     "dev:lan": "next dev --hostname 0.0.0.0 --port 3000",
     "build": "npx prisma generate && next build",
+    "db:push": "npx prisma db push",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "npx prisma generate"

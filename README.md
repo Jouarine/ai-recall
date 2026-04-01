@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Recall
 
-## Getting Started
+AI 复习与刷题项目，基于 Next.js + Prisma。
 
-First, run the development server:
+## 本地开发
+
+先准备 PostgreSQL，并设置环境变量：
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+然后执行：
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run db:push
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Vercel 部署
 
-## Learn More
+这个项目现在使用 `PostgreSQL`，不再使用本地 `SQLite`。
 
-To learn more about Next.js, take a look at the following resources:
+Vercel 需要配置：
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+DATABASE_URL=你的 Postgres 连接串
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+推荐数据库：
 
-## Deploy on Vercel
+- Vercel Postgres
+- Neon
+- Supabase
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+部署步骤：
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. 在 Vercel 项目里添加 `DATABASE_URL`
+2. 重新部署一次
+3. 在本地执行一次：
+
+```bash
+npx prisma db push
+```
+
+如果你的数据库是云端共享库，也可以在任意能连通数据库的环境执行：
+
+```bash
+npx prisma db push
+```
+
+## 说明
+
+- 题目、错题、收藏、资料源文本现在都依赖数据库持久化
+- 不再依赖本地 `data/*.json` 文件存储
