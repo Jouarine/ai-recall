@@ -143,7 +143,9 @@ export async function POST(request: Request) {
     });
 
     if (typeof sourceText === 'string' && sourceText.trim()) {
-      await saveMaterialSource(material.id, sourceText.trim());
+      await saveMaterialSource(material.id, sourceText.trim()).catch((error) => {
+        console.warn('Failed to persist material source text:', error);
+      });
     }
 
     return NextResponse.json(material, { status: 201 });

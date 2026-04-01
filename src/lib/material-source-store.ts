@@ -7,18 +7,22 @@ const STORE_PATH = path.join(DATA_DIR, 'material-sources.json');
 type MaterialSourceMap = Record<string, string>;
 
 async function ensureStoreFile() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
   try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.access(STORE_PATH);
   } catch {
-    await fs.writeFile(STORE_PATH, JSON.stringify({}, null, 2), 'utf8');
+    try {
+      await fs.writeFile(STORE_PATH, JSON.stringify({}, null, 2), 'utf8');
+    } catch {
+      // Ignore readonly / ephemeral filesystem errors in hosted environments.
+    }
   }
 }
 
 async function readStore(): Promise<MaterialSourceMap> {
-  await ensureStoreFile();
-  const raw = await fs.readFile(STORE_PATH, 'utf8');
   try {
+    await ensureStoreFile();
+    const raw = await fs.readFile(STORE_PATH, 'utf8');
     return JSON.parse(raw) as MaterialSourceMap;
   } catch {
     return {};
@@ -26,8 +30,12 @@ async function readStore(): Promise<MaterialSourceMap> {
 }
 
 async function writeStore(data: MaterialSourceMap) {
-  await ensureStoreFile();
-  await fs.writeFile(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  try {
+    await ensureStoreFile();
+    await fs.writeFile(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch {
+    // Ignore readonly / ephemeral filesystem errors in hosted environments.
+  }
 }
 
 export async function saveMaterialSource(materialId: string, sourceText: string) {
@@ -48,4 +56,3 @@ export async function deleteMaterialSource(materialId: string) {
     await writeStore(store);
   }
 }
-

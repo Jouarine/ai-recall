@@ -111,6 +111,8 @@ ${text}`;
 
 export function MaterialUploadDialog({ onCreatedMaterial }: MaterialUploadDialogProps) {
   const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState('');
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -207,8 +209,11 @@ export function MaterialUploadDialog({ onCreatedMaterial }: MaterialUploadDialog
       return;
     }
 
-    const raw = window.prompt('请粘贴外部 AI 返回的 JSON 大纲（可包含题目）');
-    if (!raw) return;
+    const raw = importText.trim();
+    if (!raw) {
+      alert('请先粘贴外部 AI 返回的 JSON 大纲。');
+      return;
+    }
 
     try {
       const parsed = JSON.parse(raw) as ExternalOutline | ExternalOutline['chapters'];
@@ -219,6 +224,8 @@ export function MaterialUploadDialog({ onCreatedMaterial }: MaterialUploadDialog
       }
 
       await saveMaterial({ title, chapters, sourceText: text.trim() || undefined });
+      setImportText('');
+      setImportOpen(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : '导入失败';
       alert(`导入外部大纲失败：${message}`);
@@ -309,7 +316,17 @@ export function MaterialUploadDialog({ onCreatedMaterial }: MaterialUploadDialog
                 <ClipboardCopy className="h-4 w-4" />
                 复制提示词
               </Button>
-              <Button variant="outline" className="w-full gap-2" onClick={handleImportOutline}>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => {
+                  if (!title.trim()) {
+                    alert('请先填写资料名称。');
+                    return;
+                  }
+                  setImportOpen(true);
+                }}
+              >
                 <Import className="h-4 w-4" />
                 导入外部大纲
               </Button>
@@ -328,6 +345,31 @@ export function MaterialUploadDialog({ onCreatedMaterial }: MaterialUploadDialog
           </>
         )}
       </DialogContent>
+
+      <Dialog open={importOpen} onOpenChange={(val) => !loading && setImportOpen(val)}>
+        <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto scrollbar-hide">
+          <DialogHeader>
+            <DialogTitle>导入外部大纲</DialogTitle>
+            <DialogDescription>请粘贴外部 AI 返回的完整 JSON。移动端请直接长按粘贴到下方文本框。</DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 py-2">
+            <Label htmlFor="importOutline">JSON 大纲</Label>
+            <Textarea
+              id="importOutline"
+              className="min-h-[260px] resize-y"
+              placeholder='请粘贴 {"chapters":[...]} 或 chapters 数组...'
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+            />
+          </div>
+
+          <Button className="w-full gap-2" onClick={handleImportOutline} disabled={!importText.trim()}>
+            <Import className="h-4 w-4" />
+            确认导入
+          </Button>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
