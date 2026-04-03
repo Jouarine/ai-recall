@@ -49,12 +49,33 @@ export default function FavoritesPage() {
   const { data: favorites = [], isLoading, mutate } = useSWR<FavoriteItem[]>('/api/favorites', fetchFavorites);
 
   const unstar = async (id: string) => {
-    await fetch(`/api/questions/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isStarred: false }),
+    const previousFavorites = favorites;
+
+    await mutate(
+      async () => {
+        const response = await fetch(`/api/questions/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isStarred: false }),
+        });
+
+        const data = (await response.json().catch(() => ({}))) as { error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error || '取消收藏失败');
+        }
+
+        return previousFavorites.filter((item) => item.id !== id);
+      },
+      {
+        optimisticData: previousFavorites.filter((item) => item.id !== id),
+        rollbackOnError: true,
+        revalidate: true,
+      }
+    ).catch((error) => {
+      const message = error instanceof Error ? error.message : '取消收藏失败';
+      alert(message);
     });
-    await mutate();
   };
 
   return (

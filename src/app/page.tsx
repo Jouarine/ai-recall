@@ -266,6 +266,10 @@ export default function HomePage() {
     return new Set(errors.filter((e) => !e.resolved).map((e) => e.questionId));
   }, [errors]);
 
+  const resolvedQuestionIdSet = useMemo(() => {
+    return new Set(errors.filter((e) => e.resolved).map((e) => e.questionId));
+  }, [errors]);
+
   const selectedChapter = useMemo(() => {
     if (!currentMaterial?.chapters?.length) return null;
     if (!selectedKP?.chapterId) return currentMaterial.chapters[0];
@@ -311,8 +315,7 @@ export default function HomePage() {
       const normalizedKnowledgePoints = (chapter.knowledgePoints || []).map((kp) => {
         const kpQuestions = kp.questions || [];
         const totalCount = kpQuestions.length;
-        const unresolvedCount = kpQuestions.filter((q) => errorQuestionIdSet.has(q.id)).length;
-        const completedCount = Math.max(totalCount - unresolvedCount, 0);
+        const completedCount = kpQuestions.filter((q) => resolvedQuestionIdSet.has(q.id)).length;
 
         return {
           ...kp,
@@ -333,7 +336,7 @@ export default function HomePage() {
         totalCount,
       };
     });
-  }, [currentMaterial, errorQuestionIdSet]) as Chapter[];
+  }, [currentMaterial, resolvedQuestionIdSet]) as Chapter[];
 
   const moveToChapter = (targetIndex: number, useLastQuestion = false) => {
     if (!currentMaterial?.chapters?.length) return;
@@ -425,6 +428,11 @@ export default function HomePage() {
 
   const handleWrongAnswer = (wrongText: string) => {
     setWrongTip(`本题已加入错题本：${wrongText}`);
+    void mutateErrors();
+  };
+
+  const handleCorrectAnswer = () => {
+    setWrongTip('');
     void mutateErrors();
   };
 
@@ -681,6 +689,7 @@ export default function HomePage() {
                 knowledgePointRaw={currentScopedKP || selectedKP || {}}
                 onIndexChange={setCurrentQuestionIndex}
                 onWrongAnswerSubmit={handleWrongAnswer}
+                onCorrectAnswerSubmit={handleCorrectAnswer}
                 onPrevChapter={handlePrevChapter}
                 onNextChapter={handleNextChapter}
                 onCompleteAll={() => setStudyCompleted(true)}

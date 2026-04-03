@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+﻿export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { deleteMaterialSource } from '@/lib/material-source-store';
@@ -13,26 +13,52 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'materialId is required' }, { status: 400 });
     }
 
+    const knowledgePoints = await prisma.knowledgePoint.findMany({
+      where: {
+        chapter: {
+          materialId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const knowledgePointIds = knowledgePoints.map((item) => item.id);
+
+    const questions = knowledgePointIds.length
+      ? await prisma.question.findMany({
+          where: {
+            knowledgePointId: {
+              in: knowledgePointIds,
+            },
+          },
+          select: {
+            id: true,
+          },
+        })
+      : [];
+
+    const questionIds = questions.map((item) => item.id);
+
     const [errorDeleteResult, questionDeleteResult] = await prisma.$transaction([
       prisma.errorLog.deleteMany({
-        where: {
-          question: {
-            knowledgePoint: {
-              chapter: {
-                materialId,
+        where: questionIds.length
+          ? {
+              questionId: {
+                in: questionIds,
               },
-            },
-          },
-        },
+            }
+          : {},
       }),
       prisma.question.deleteMany({
-        where: {
-          knowledgePoint: {
-            chapter: {
-              materialId,
-            },
-          },
-        },
+        where: knowledgePointIds.length
+          ? {
+              knowledgePointId: {
+                in: knowledgePointIds,
+              },
+            }
+          : {},
       }),
     ]);
 

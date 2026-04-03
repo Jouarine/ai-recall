@@ -41,11 +41,21 @@ const pickString = (obj: Record<string, unknown>, keys: string[]): string | null
 
 const normalizeType = (rawType: string, allowedTypes: string[]): string => {
   const t = rawType.toLowerCase().trim();
-  if (['choice', 'multiple_choice', 'mcq', 'xuan ze ti', '选择题'].includes(t)) return allowedTypes.includes('choice') ? 'choice' : allowedTypes[0];
-  if (['cloze', 'fill', 'fill_blank', 'tian kong ti', '填空题'].includes(t)) return allowedTypes.includes('cloze') ? 'cloze' : allowedTypes[0];
-  if (['short_answer', 'qa', 'jian da ti', '简答题'].includes(t)) return allowedTypes.includes('short_answer') ? 'short_answer' : allowedTypes[0];
-  if (['thinking', 'si kao ti', '思考题'].includes(t)) return allowedTypes.includes('thinking') ? 'thinking' : allowedTypes[0];
-  if (['application', 'case', 'ying yong ti', '应用题'].includes(t)) return allowedTypes.includes('application') ? 'application' : allowedTypes[0];
+  if (['choice', 'multiple_choice', 'mcq', 'xuan ze ti', '选择题'].includes(t)) {
+    return allowedTypes.includes('choice') ? 'choice' : allowedTypes[0];
+  }
+  if (['cloze', 'fill', 'fill_blank', 'tian kong ti', '填空题'].includes(t)) {
+    return allowedTypes.includes('cloze') ? 'cloze' : allowedTypes[0];
+  }
+  if (['short_answer', 'qa', 'jian da ti', '简答题'].includes(t)) {
+    return allowedTypes.includes('short_answer') ? 'short_answer' : allowedTypes[0];
+  }
+  if (['thinking', 'si kao ti', '思考题'].includes(t)) {
+    return allowedTypes.includes('thinking') ? 'thinking' : allowedTypes[0];
+  }
+  if (['application', 'case', 'ying yong ti', '应用题'].includes(t)) {
+    return allowedTypes.includes('application') ? 'application' : allowedTypes[0];
+  }
   return allowedTypes[0] || 'cloze';
 };
 
@@ -95,16 +105,22 @@ const normalizeOutline = (raw: z.infer<typeof looseSchema>, allowedTypes: string
             (questionType === 'choice' ? optionsRaw[0] || kpName : kpName);
 
           if (questionType === 'cloze') {
-            const sentence = sentenceBase.includes('{{blank_') ? sentenceBase : `请根据知识点填空：${kpName} {{blank_0}}`;
+            const sentence = sentenceBase.includes('{{blank_')
+              ? sentenceBase
+              : `请根据知识点填空：${kpName} {{blank_0}}`;
             const answers = answersRaw.length ? answersRaw : [kpName];
             nonEmptyStringArray.parse(answers);
+
             return {
               name: kpName,
               originalText,
               question: {
                 type: 'cloze',
+                stem: '',
                 sentence,
                 answers,
+                options: [],
+                referenceAnswer: '',
               },
             };
           }
@@ -115,7 +131,9 @@ const normalizeOutline = (raw: z.infer<typeof looseSchema>, allowedTypes: string
             question: {
               type: questionType,
               stem,
-              options: questionType === 'choice' ? (optionsRaw.length ? optionsRaw.slice(0, 4) : [kpName, '选项B', '选项C', '选项D']) : undefined,
+              sentence: '',
+              answers: [],
+              options: questionType === 'choice' ? (optionsRaw.length ? optionsRaw.slice(0, 4) : [kpName, '选项B', '选项C', '选项D']) : [],
               referenceAnswer,
             },
           };
@@ -166,8 +184,9 @@ export async function POST(req: Request) {
 3. 禁止使用（）/____/[空] 作为填空标记。
 4. choice 提供 stem+options+referenceAnswer。
 5. short_answer/thinking/application 提供 stem+referenceAnswer。
-6. 仅输出 JSON，不要解释，不要 Markdown 代码块。
-7. 覆盖全部章节和知识点，不要只生成前几章。
+6. 所有字段必须保留，不能缺字段。
+7. 仅输出 JSON，不要解释，不要 Markdown 代码块。
+8. 覆盖全部章节和知识点，不要只生成前几章。
 
 示例（必须严格仿照字段结构）：
 {

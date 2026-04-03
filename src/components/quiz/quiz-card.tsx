@@ -37,6 +37,7 @@ interface QuizCardProps {
   knowledgePointRaw: KnowledgePointLike;
   onIndexChange: (index: number) => void;
   onWrongAnswerSubmit: (wrongText: string) => void;
+  onCorrectAnswerSubmit?: () => void;
   onPrevChapter?: () => void;
   onNextChapter?: () => void;
   onCompleteAll?: () => void;
@@ -67,6 +68,7 @@ export function QuizCard({
   knowledgePointRaw,
   onIndexChange,
   onWrongAnswerSubmit,
+  onCorrectAnswerSubmit,
   onPrevChapter,
   onNextChapter,
   onCompleteAll,
@@ -364,6 +366,7 @@ export function QuizCard({
                 originalText: knowledgePointRaw.originalText,
               }}
               onWrongAnswerSubmit={onWrongAnswerSubmit}
+              onCorrectAnswerSubmit={onCorrectAnswerSubmit}
               showResult={showResult}
             />
           ) : (
@@ -390,19 +393,25 @@ export function QuizCard({
           )}
         </CardContent>
 
-        <CardFooter className="flex flex-wrap items-center justify-between border-t border-border/40 pt-4 gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
+        <CardFooter className="flex flex-col items-stretch border-t border-border/40 pt-4 gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <Button
               variant="outline"
               size="sm"
               onClick={handleSwitchType}
               disabled={rerolling}
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
             >
               <RefreshCw className={cn('h-4 w-4', rerolling && 'animate-spin')} />
               换个题型
             </Button>
-            <Button variant="outline" size="sm" onClick={handleReroll} disabled={rerolling} className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReroll}
+              disabled={rerolling}
+              className="w-full gap-2 sm:w-auto"
+            >
               <Dices className={cn('h-4 w-4', rerolling && 'animate-spin')} />
               换个考法
             </Button>
@@ -410,13 +419,18 @@ export function QuizCard({
               variant="outline"
               size="sm"
               onClick={handleCopyCurrentQuestion}
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
             >
               <Copy className="h-4 w-4" />
               复制本题
             </Button>
             {showResult && (
-              <Button variant="ghost" size="sm" onClick={handleReset} className="gap-2 text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="w-full gap-2 text-muted-foreground sm:w-auto"
+              >
                 <RotateCcw className="h-4 w-4" />
                 重做
               </Button>
@@ -427,13 +441,13 @@ export function QuizCard({
             <Button
               onClick={handleSubmit}
               disabled={rerolling || grading || (isOpenEndedType(currentType) && !answerText.trim())}
-              className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/20"
+              className="w-full gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/20 sm:w-auto"
             >
               {grading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               提交答案
             </Button>
           ) : (
-            <Button onClick={handleNext} className="gap-2">
+            <Button onClick={handleNext} className="w-full gap-2 sm:w-auto">
               {practiceMode === 'random'
                 ? '随机下一题'
                 : currentIndex >= questions.length - 1

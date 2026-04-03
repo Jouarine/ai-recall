@@ -67,9 +67,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { questionId, userWrongAnswer } = body as {
+    const { questionId, userWrongAnswer, resolved } = body as {
       questionId?: string;
       userWrongAnswer?: string;
+      resolved?: boolean;
     };
 
     if (!questionId) {
@@ -89,16 +90,20 @@ export async function POST(request: Request) {
         },
       },
       update: {
-        errorCount: {
-          increment: 1,
-        },
-        userWrongAnswer,
-        isResolved: false,
+        errorCount:
+          resolved === true
+            ? undefined
+            : {
+                increment: 1,
+              },
+        userWrongAnswer: resolved === true ? undefined : userWrongAnswer,
+        isResolved: resolved === true,
       },
       create: {
         questionId,
         userId: user.id,
-        userWrongAnswer,
+        userWrongAnswer: resolved === true ? undefined : userWrongAnswer,
+        isResolved: resolved === true,
       },
     });
 

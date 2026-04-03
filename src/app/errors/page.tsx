@@ -36,7 +36,57 @@ const formatDate = (value: string | Date): string => {
 export default function ErrorsPage() {
   const [sortBy, setSortBy] = useState<'count' | 'date'>('count');
   const [filterResolved, setFilterResolved] = useState(false);
-  const { data: allErrors = [], isLoading } = useSWR<ErrorRecord[]>('/api/errors', fetchErrors);
+  const { data: allErrors = [], isLoading, mutate } = useSWR<ErrorRecord[]>('/api/errors', fetchErrors);
+
+  const toggleStar = async (questionId: string, nextStarred: boolean) => {
+    const previousErrors = allErrors;
+
+    await mutate(
+      async () => {
+        const response = await fetch(`/api/questions/${questionId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isStarred: nextStarred }),
+        });
+
+        const data = (await response.json().catch(() => ({}))) as { error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error || (nextStarred ? '收藏失败' : '取消收藏失败'));
+        }
+
+        return previousErrors.map((item) =>
+          item.questionId === questionId
+            ? {
+                ...item,
+                question: {
+                  ...item.question,
+                  isStarred: nextStarred,
+                },
+              }
+            : item
+        );
+      },
+      {
+        optimisticData: previousErrors.map((item) =>
+          item.questionId === questionId
+            ? {
+                ...item,
+                question: {
+                  ...item.question,
+                  isStarred: nextStarred,
+                },
+              }
+            : item
+        ),
+        rollbackOnError: true,
+        revalidate: true,
+      }
+    ).catch((error) => {
+      const message = error instanceof Error ? error.message : nextStarred ? '收藏失败' : '取消收藏失败';
+      alert(message);
+    });
+  };
 
   const filtered = useMemo(
     () => (filterResolved ? allErrors : allErrors.filter((e) => !e.resolved)),
@@ -139,13 +189,20 @@ export default function ErrorsPage() {
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-xs text-muted-foreground">最后一次错误：{formatDate(err.lastErrorAt)}</span>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-                        <PlayCircle className="h-3 w-3" />
-                        重做
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
-                        <Star className="h-3 w-3" />
-                        收藏
+                      <Link href={`/?questionId=${err.questionId}`}>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
+                          <PlayCircle className="h-3 w-3" />
+                          重做
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn('h-7 text-xs gap-1', err.question.isStarred ? 'text-amber-400' : 'text-muted-foreground')}
+                        onClick={() => void toggleStar(err.questionId, !err.question.isStarred)}
+                      >
+                        <Star className={cn('h-3 w-3', err.question.isStarred && 'fill-amber-400')} />
+                        {err.question.isStarred ? '取消收藏' : '收藏'}
                       </Button>
                     </div>
                   </div>

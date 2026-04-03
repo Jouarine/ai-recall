@@ -22,10 +22,11 @@ type ClozeQuestionView = {
 interface ClozeQuestionCardProps {
   question: ClozeQuestionView;
   onWrongAnswerSubmit: (wrongText: string) => void;
+  onCorrectAnswerSubmit?: () => void;
   showResult: boolean;
 }
 
-export function ClozeQuestionCard({ question, showResult, onWrongAnswerSubmit }: ClozeQuestionCardProps) {
+export function ClozeQuestionCard({ question, showResult, onWrongAnswerSubmit, onCorrectAnswerSubmit }: ClozeQuestionCardProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showOriginal, setShowOriginal] = useState(false);
   const lastReportedRef = useRef<string>('');
@@ -64,8 +65,20 @@ export function ClozeQuestionCard({ question, showResult, onWrongAnswerSubmit }:
       }).catch(console.error);
 
       onWrongAnswerSubmit(userWrongAnswer);
+      return;
     }
-  }, [showResult, answers, question.blanks, question.id, onWrongAnswerSubmit]);
+
+    fetch('/api/errors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        questionId: question.id,
+        resolved: true,
+      }),
+    })
+      .then(() => onCorrectAnswerSubmit?.())
+      .catch(console.error);
+  }, [showResult, answers, question.blanks, question.id, onWrongAnswerSubmit, onCorrectAnswerSubmit]);
 
   useEffect(() => {
     if (!showResult) {
